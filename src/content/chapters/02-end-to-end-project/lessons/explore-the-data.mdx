@@ -1,0 +1,119 @@
+<Section id="rules">
+
+İndi məlumatı daha dərindən tanıyırıq. Üç sadə qayda var:
+
+1. **Yalnız təlim dəstini araşdırın.** Test dəsti kilidlidir.
+2. **Nüsxə üzərində işləyin** (`df = train.copy()`). Eksperimentlər əsl təlim məlumatını pozmasın.
+3. **Məlumat çox böyükdürsə**, sürətli araşdırma üçün kiçik bir nümunə götürün. Bizim 1 920 sətir üçün buna ehtiyac yoxdur.
+
+</Section>
+
+<Section id="geography">
+
+Məlumatda coğrafi koordinatlar (enlik və uzunluq) var. Ən sadə vizuallaşdırma budur: hər mənzili koordinatına görə nöqtə kimi göstərin və rəngini qiymətə görə seçin:
+
+```python
+df.plot(kind="scatter", x="uzunluq", y="enlik", alpha=0.3,
+        c=df["qiymet"] / df["sahe"], cmap="viridis", colorbar=True, figsize=(10, 6))
+```
+
+`alpha` parametri vacibdir. Nöqtələr üst-üstə düşdükdə şəffaflıq sıxlığı göstərir: tünd yerlərdə mənzil çoxdur. Simulyasiyanın “Xəritə” rejimində eyni şəkli görəcəksiniz:
+
+- **Mərkəz** (Səbail, Nəsimi) ən bahalıdır. 1 m²-in median qiyməti ~2 850–3 150 AZN-dir.
+- Şərqə və şimala getdikcə qiymət düşür. Suraxanıda, Xəzərdə və Sabunçuda median ~1 000 AZN-dir.
+
+Bu, gözlənilən nəticədir, lakin vacib bir fikri təsdiqləyir: **yer** güclü əlamətdir və model onu bu və ya digər formada görməlidir.
+
+</Section>
+
+<Section id="correlation">
+
+İki ədədi əlamət arasındakı **xətti** əlaqəni <Term id="correlation-coefficient" full /> ilə ölçürük:
+
+$$
+r_{xy} = \frac{\sum_{i}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i}(x_i - \bar{x})^2}\,\sqrt{\sum_{i}(y_i - \bar{y})^2}}
+$$
+
+- $r$ həmişə $-1$ ilə $1$ arasındadır;
+- $r$ 1-ə yaxındırsa, güclü müsbət əlaqə var: biri artdıqca digəri də artır;
+- $r$ −1-ə yaxındırsa, güclü mənfi əlaqə var. Məsələn, metroya məsafə artdıqca qiymət düşür;
+- $r \approx 0$ isə **xətti** əlaqə olmadığını bildirir.
+
+Pandas-da bütün cütlər üçün bir əmr kifayətdir: `df.corr(numeric_only=True)["qiymet"]`.
+
+<Callout variant="warning" title="Korrelyasiyanın iki məhdudiyyəti">
+**1. Yalnız xətti əlaqəni tutur.** $y = x^2$ kimi U formalı əlaqədə r sıfıra yaxın ola bilər, halbuki əlaqə mükəmməldir.
+
+**2. Meyli (slope) göstərmir.** r = 1 həm “hər m² +10 AZN”, həm də “hər m² +5 000 AZN” üçün eyni ola bilər. O, yalnız nöqtələrin düz xəttə nə qədər yaxın düzüldüyünü ölçür.
+</Callout>
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada hər əlamətin qiymətlə əlaqəsini araşdırın. Ən vacib eksperiment: “Sahə” əlamətini seçin və “yazı səhvlərini düzəlt” seçimini açıb-bağlayın.
+
+<Demo id="correlation-explorer" />
+
+Səpələnmə qrafikində sağda, 500–1 500 m² aralığında bir neçə nöqtə tək-tənha durur. Onların qiyməti adi mənzillər kimidir. Bunlar 72.5 əvəzinə 725 yazılmış sətirlərdir. Cəmi bir neçə belə nöqtə korrelyasiyanı ciddi şəkildə aşağı salır. Təlim dəstində 4 səhvi düzəltdikdə sahə ilə qiymət arasındakı r **0.42-dən 0.66-ya** qalxır.
+
+<Callout variant="insight">
+Bu, kəşfin əsas dəyəridir: **vizuallaşdırma statistikanın gizlətdiyi problemləri göstərir.** Tək r rəqəminə baxsaydıq, “sahə zəif əlamətdir” deyə yanlış nəticə çıxara bilərdik.
+</Callout>
+
+</Section>
+
+<Section id="combinations">
+
+Bəzən mövcud əlamətlərin birləşməsi daha informativ olur. Gəlin iki ideyanı yoxlayaq:
+
+| Yeni əlamət | Düstur | İdeya |
+|---|---|---|
+| `otaq_sahesi` | sahə / otaq sayı | Geniş otaqlar dəbdəbə əlamətidir? |
+| `mertebe_nisbeti` | mərtəbə / bina mərtəbəsi | Yuxarı mərtəbələr baha ola bilər? |
+
+Təlim dəstində korrelyasiyalar (yazı səhvləri düzəldildikdən sonra):
+
+| Əlamət | r (qiymət ilə) |
+|---|---|
+| `sahe` | 0.656 |
+| `otaq_sahesi` | −0.041 |
+| `mertebe_nisbeti` | 0.008 |
+| `metro_mesafe` | −0.388 |
+
+Hər iki ideya **işləmədi**: korrelyasiya sıfıra yaxındır. Bu da normaldır. Kəşf hipotez qurub yoxlamaq dövrüdür və hipotezlərin çoxu təsdiqlənmir. Lakin r yalnız *xətti* əlaqəni ölçür. Ağaclar kimi qeyri-xətti modellər bu əlamətlərdən yenə də fayda götürə bilər. Ona görə də `mertebe_nisbeti`-ni pipeline-da saxlayacağıq və onun töhfəsini sonra əlamət əhəmiyyəti ilə yoxlayacağıq.
+
+</Section>
+
+<Section id="leakage">
+
+Ən təhlükəli “yaxşı ideya” **1 m² qiyməti** əlamətini (`qiymet / sahe`) model girişinə əlavə etməkdir. Onun qiymətlə korrelyasiyası çox yüksəkdir. Lakin o, **hədəfin özündən** hesablanıb. Yeni mənzilin qiyməti məlum olmadığı üçün onun 1 m² qiymətini də bilmirik.
+
+Bu səhv <Term id="data-leakage" full /> adlanır: proqnoz anında mövcud olmayacaq informasiya təlimə daxil olur. Model təlimdə və validasiyada möcüzəvi nəticə göstərir, real istifadədə isə ya işləmir, ya da çox pis işləyir.
+
+Digər tipik sızma mənbələri:
+
+- **Gələcəkdən gələn məlumat.** Məsələn, satışdan sonra qeyd olunan “alıcının ödədiyi komissiya”.
+- **Testin statistikası.** Scaler və ya imputer-i bütün məlumatda fit etmək (növbəti dərs).
+- **Təkrarlanan nümunələr.** Eyni mənzilin iki elanı həm təlimə, həm də testə düşür.
+
+Qayda sadədir: hər əlamət üçün soruşun, **“Proqnoz anında bu məlumat əlimdə olacaqmı?”**
+
+</Section>
+
+<Section id="python">
+
+Aşağıdakı skript yuxarıdakı bütün addımları təlim dəsti üzərində təkrarlayır: korrelyasiyalar, şübhəli sətirlər, düzəlişdən sonrakı r, birləşmiş əlamətlər və rayonlar üzrə 1 m² qiymətləri.
+
+<PythonExample id="ch02.code.explore" />
+
+</Section>
+
+<Section id="summary">
+
+- Kəşfi **yalnız təlim dəstinin nüsxəsində** aparın.
+- **Coğrafi vizuallaşdırma** yerin güclü əlamət olduğunu göstərdi.
+- **Pearson r** xətti əlaqəni ölçür və kənar qiymətlərə çox həssasdır: 4 yazı səhvi r-i 0.66-dan 0.42-yə endirir.
+- Yeni əlamətləri **yoxlayın**, onlara inanmayın. **Hədəfdən törədilmiş əlamətlər sızmadır.**
+
+</Section>

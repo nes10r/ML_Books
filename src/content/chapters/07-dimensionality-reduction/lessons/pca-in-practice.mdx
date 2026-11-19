@@ -1,0 +1,83 @@
+<Section id="choosing">
+
+Neçə komponent saxlamaq lazımdır? Üç praktiki yol var:
+
+1. **Dispersiya payına görə.** Kumulyativ izah olunan dispersiyanın kifayət qədər böyük olduğu, məsələn 95%, ən kiçik $d$ seçilir. Scikit-Learn-də bunun üçün `n_components`-ə 0 ilə 1 arasında qiymət vermək kifayətdir:
+
+```python
+pca = PCA(n_components=0.95)
+X_reduced = pca.fit_transform(X)   # pca.n_components_ → seçilmiş d
+```
+
+2. **Dirsəyə görə.** Kumulyativ dispersiya əyrisinin kəskin yastılaşdığı nöqtə seçilir.
+
+3. **Son tapşırığa görə.** PCA təsnifatdan və ya reqressiyadan əvvəl ön emal addımıdırsa, `n_components` pipeline-da hiperparametr kimi çarpaz validasiya ilə seçilir. Məqsəd son modelin performansıdır.
+
+Vizuallaşdırma üçün isə adətən $d = 2$ və ya $d = 3$ seçilir.
+
+Rəqəm şəkilləri üçün kumulyativ dispersiya:
+
+| Saxlanılan dispersiya | Lazım olan komponent (64-dən) |
+|---|---|
+| 80% | 13 |
+| 90% | 21 |
+| **95%** | **29** |
+| 99% | 41 |
+
+</Section>
+
+<Section id="compression">
+
+Ölçünü azaltdıqdan sonra məlumat çox az yer tutur. Rəqəmlər üçün 64 əvəzinə 29 ədəd lazımdır, bu da ölçünün 45%-i deməkdir. Bu, **sıxılmadır**.
+
+Proyeksiyanı tərsinə çevirib təxmini orijinalı **bərpa** etmək də olar:
+
+$$
+\mathbf{X}_{\text{recovered}} = \mathbf{X}_{d\text{-proj}}\,\mathbf{W}_d^{\intercal}
+$$
+
+Atılan komponentlərdəki informasiya geri gəlmir. Orijinal və bərpa olunmuş məlumat arasındakı orta kvadrat fərq <Term id="reconstruction-error" full /> adlanır. Rəqəmlərdə 95% dispersiya ilə bu xəta piksel başına ~0.85-dir. Piksellər 0–16 aralığında olduğu üçün bu, gözlə demək olar ki, hiss olunmur.
+
+</Section>
+
+<Section id="simulation">
+
+1 797 rəqəm şəklinin bütün PCA hesablaması, yəni 64×64 kovariasiya matrisinin məxsusi vektorları, brauzerdə aparılır. Komponent sayını dəyişərək bərpanın keyfiyyətini izləyin.
+
+<Demo id="pca-compression" />
+
+- **1–3 komponent:** bütün şəkillər bulanıq “orta rəqəmə” bənzəyir.
+- **~10 komponent:** rəqəmlər artıq tanınır.
+- **29 komponent:** orijinaldan demək olar ki, fərqlənmir, dispersiyanın 95%-i saxlanılır.
+
+Aşağıdakı “məxsusi rəqəmlər” ilk əsas komponentlərdir. Hər şəkil orta şəkil üstəgəl bu “naxışların” çəkili cəmi kimi təsvir olunur.
+
+</Section>
+
+<Section id="scaling-up">
+
+Adi PCA tam SVD hesablayır. Bu, böyük məlumatda yavaş ola bilər və məlumatın yaddaşa sığmasını tələb edir. Scikit-Learn-də iki alternativ var:
+
+- **<Term id="randomized-pca" full /> (`svd_solver="randomized"`).** İlk $d$ komponenti stoxastik alqoritmlə təxmini tapır. Mürəkkəblik $O(n^3)$ əvəzinə təxminən $O(m \times d^2) + O(d^3)$ olur. $d$ $n$-dən xeyli kiçik olduqda çox sürətlidir. Scikit-Learn məlumat böyük olduqda bunu avtomatik seçir.
+- **<Term id="incremental-pca" full /> (`IncrementalPCA`).** Məlumatı mini-paketlərlə `partial_fit()` vasitəsilə emal edir. Yaddaşa sığmayan dəstlər, məsələn diskdəki `np.memmap`, və onlayn öyrənmə üçün uyğundur.
+
+Rəqəmlərdə hər üç üsul demək olar ki, eyni nəticə verir. İzah olunan dispersiya adi və randomized PCA üçün 0.955, incremental PCA üçün isə 0.953-dür.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch07.code.pca-digits" />
+
+Son iki sətir vacib bir dərs verir. Logistik reqressiya 64 piksellə **0.920**, PCA-dan sonra isə **0.912** CV dəqiqliyi göstərir. PCA bu halda bir az informasiya itirdi. Bunun qarşılığında əlamət sayı azaldı və təlim sürətləndi. Ölçü azaltma **kompromisdir**: hər zaman ölçün.
+
+</Section>
+
+<Section id="summary">
+
+- Komponent sayını **dispersiya payı** (məs. 95%), **dirsək** və ya **son tapşırığın CV nəticəsi** ilə seçin.
+- PCA **sıxılma** üçün istifadə olunur. `inverse_transform` təxmini bərpa verir, keyfiyyəti isə **bərpa xətası** ölçür.
+- Rəqəmlərdə 29 komponent (64-dən) dispersiyanın 95%-ni saxlayır.
+- Böyük məlumat üçün **randomized PCA**, yaddaşa sığmayan məlumat üçün **incremental PCA**.
+
+</Section>

@@ -1,0 +1,68 @@
+<Section id="forest">
+
+<Term id="random-forest" full /> qərar ağaclarından ibarət bagging ansamblıdır. Ağaclar adətən tam böyüdülür və hər biri təlim dəstinin bootstrap nüsxəsində öyrədilir. Bununla yanaşı, təsadüfi meşə bir **əlavə təsadüfilik** gətirir:
+
+> Hər düyündə ən yaxşı bölgü bütün əlamətlər arasında deyil, **təsadüfi seçilmiş əlamət alt-çoxluğu** arasında axtarılır.
+
+Scikit-Learn-də təsnifat üçün bu, defolt olaraq $\sqrt{n}$ əlamətdir (`max_features="sqrt"`). Nəticədə ağaclar bir-birinə daha az bənzəyir. Bu, səsvermə dərsindən tanış olan **müxtəliflikdir**: dispersiya azalır, sürüşmə bir qədər artır və ümumi nəticə adətən yaxşılaşır.
+
+```python
+rnd_clf = RandomForestClassifier(n_estimators=500, max_leaf_nodes=16, n_jobs=-1, random_state=42)
+```
+
+Bu sinif ağacların bütün hiperparametrlərini (`max_depth`, `min_samples_leaf`…) və bagging-in hiperparametrlərini (`n_estimators`, `max_samples`, `oob_score`…) birləşdirir.
+
+<Callout variant="tip">
+Təsadüfi meşə ən yaxşı “hazır” modellərdən biridir. Miqyaslama tələb etmir, az tənzimləmə ilə yaxşı işləyir və yaxşı baza nəticəsi verir. Fəsil 2-də mənzil qiymətləri üçün ən yaxşı model də məhz təsadüfi meşə idi.
+</Callout>
+
+</Section>
+
+<Section id="extra-trees">
+
+Bir addım irəli gedək: hər əlamət üçün **ən yaxşı həddi axtarmaq əvəzinə təsadüfi hədd** seçək. Ən yaxşısı isə bu təsadüfi namizədlər arasından seçilir. Belə meşə <Term id="extra-trees" full /> adlanır.
+
+- Ağaclar daha da müxtəlif olur: dispersiya daha da azalır, sürüşmə isə artır.
+- Təlim **daha sürətlidir**, çünki ən yaxşı həddi axtarmaq ağac təliminin ən bahalı hissəsidir.
+
+Hansının daha yaxşı olacağını əvvəlcədən bilmək olmur. İkisini də çarpaz validasiya ilə müqayisə edin. Bizim “aylar” nümunəsində adi meşə bir qədər yaxşı oldu: 0.917 vs 0.907.
+
+Bagging və təsadüfi meşə simulyasiyası əvvəlki dərsdədir. Orada “Təsadüfi meşə” və “Extra-Trees” rejimlərinə keçib nəticəni müqayisə edin:
+
+<Demo id="bagging-forest" />
+
+</Section>
+
+<Section id="importance">
+
+Təsadüfi meşənin faydalı bonusu var: o, hər əlamətin **nisbi əhəmiyyətini** ölçür. <Term id="feature-importance" full /> belə hesablanır:
+
+1. Hər düyündə bölgünün qeyri-müəyyənliyi (Gini) **nə qədər azaltdığı** hesablanır və düyündəki nümunə sayı ilə çəkilir.
+2. Bu azalmalar hər əlamət üçün bütün ağaclar üzrə toplanır.
+3. Nəticə elə normallaşdırılır ki, bütün əhəmiyyətlərin cəmi 1 olsun.
+
+Rəqəm şəkillərində meşə 64 pikselin hər birinin əhəmiyyətini ölçür. Nəticəni 8×8 xəritə kimi göstərmək olar. Python çıxışında tünd simvollar vacib pikselləri göstərir:
+
+- **mərkəzi 4×4 blok** ümumi əhəmiyyətin **47%**-ni toplayır, çünki rəqəmlər burada yazılır;
+- **kənar sütunlar** cəmi **0.7%** toplayır, çünki bu piksellər demək olar ki, həmişə boşdur.
+
+<Callout variant="warning" title="Əhəmiyyəti ehtiyatla şərh edin">
+Gini əsaslı əhəmiyyət çoxlu unikal qiyməti olan əlamətləri “sevir”. Korrelyasiyalı əlamətlər arasında isə əhəmiyyət bölünür. Daha etibarlı alternativ `sklearn.inspection.permutation_importance`-dir: əlamətin qiymətləri qarışdırılır və modelin validasiya dəstindəki performansının nə qədər düşdüyü ölçülür.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch06.code.forest" />
+
+</Section>
+
+<Section id="summary">
+
+- **Təsadüfi meşə** = ağaclarla bagging + hər düyündə təsadüfi əlamət alt-çoxluğu. Güclü, az tənzimləmə tələb edən modeldir.
+- **Extra-Trees** təsadüfi hədlər də seçir: daha sürətlidir, daha çox müxtəliflik verir. Hansının daha yaxşı olduğunu CV göstərir.
+- **Əlamət əhəmiyyəti** qeyri-müəyyənlik azalmasından hesablanır. Rəqəmlərdə mərkəzi piksellər, gözlənildiyi kimi, ən vacibdir.
+- Korrelyasiyalı əlamətlərdə **permutation importance** daha etibarlıdır.
+
+</Section>

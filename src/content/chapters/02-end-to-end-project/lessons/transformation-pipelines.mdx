@@ -1,0 +1,107 @@
+<Section id="sklearn-design">
+
+Scikit-Learn-in API-si bir neçə sadə və ardıcıl prinsip üzərində qurulub. Bunları bilmək istənilən sinfi sənədə baxmadan istifadə etməyə imkan verir.
+
+- **<Term id="estimator" full />**: məlumatdan parametr öyrənən istənilən obyekt. Öyrənmə `fit(X)` (nəzarətli halda `fit(X, y)`) ilə aparılır. `SimpleImputer` bir estimator-dur, o, medianları öyrənir.
+- **<Term id="transformer" full />**: məlumatı çevirə bilən estimator, `transform(X)` metodu ilə. `fit_transform()` hər ikisini bir addımda edir və çox vaxt daha optimallaşdırılmışdır.
+- **Predictor**: proqnoz verə bilən estimator (`predict()`), məsələn `LinearRegression`. `score()` metodu keyfiyyəti ölçür.
+
+Əlavə konvensiyalar:
+
+- **Hiperparametrlər** konstruktorda verilir və eyni adlı public atributlarda saxlanılır: `imputer.strategy`.
+- **Öyrənilmiş parametrlərin** adı alt xətt ilə bitir: `imputer.statistics_`, `model.coef_`.
+- **Girişlər** NumPy massivi və ya pandas DataFrame-dir. Yeni “xüsusi” məlumat tipləri yoxdur.
+
+</Section>
+
+<Section id="custom">
+
+Scikit-Learn-də olmayan bir çevirmə lazımdır: yazı səhvlərini düzəltmək. Öz transformerimizi yazırıq. Bunun üçün yalnız `fit()` və `transform()` metodları olan sinif kifayətdir. İki baza sinfindən törədərək əlavə imkanlar da “pulsuz” alırıq:
+
+1. **`TransformerMixin`** — `fit_transform()` metodunu avtomatik əlavə edir.
+2. **`BaseEstimator`** — `get_params()` və `set_params()` əlavə edir. Bunlar hiperparametr axtarışı üçün lazımdır. Şərt: konstruktorda `*args` və `**kwargs` olmamalıdır.
+
+```python
+class AreaTypoFixer(BaseEstimator, TransformerMixin):
+    def __init__(self, max_area=400.0):   # hiperparametr
+        self.max_area = max_area
+
+    def fit(self, X, y=None):
+        self.n_features_in_ = X.shape[1]
+        return self                        # həmişə self qaytarılır
+
+    def transform(self, X):
+        X = np.asarray(X, dtype=float).copy()
+        X[X > self.max_area] /= 10        # 725 → 72.5
+        return X
+```
+
+Sadə, “vəziyyətsiz” çevirmələr üçün sinif yazmağa ehtiyac yoxdur. `FunctionTransformer` adi funksiyanı transformerə çevirir: `FunctionTransformer(np.log, inverse_func=np.exp)`.
+
+</Section>
+
+<Section id="pipeline">
+
+Hazırlıq addımları müəyyən ardıcıllıqla icra olunmalıdır: əvvəlcə doldurmaq, sonra miqyaslamaq. `Pipeline` bunu təşkil edir:
+
+```python
+num_pipeline = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
+```
+
+Pipeline-ın `fit()` metodu çağırıldıqda:
+
+1. birinci addımın `fit_transform()` metodu çağırılır və nəticə ikinci addıma ötürülür;
+2. bu, axırıncıdan əvvəlki addıma qədər davam edir;
+3. son addım üçün yalnız `fit()` çağırılır.
+
+Pipeline son addımla **eyni metodları** təqdim edir. Son addım transformerdirsə, pipeline da transformerdir. Son addım modeldirsə, pipeline-ın `predict()` metodu da olur. Bütün hazırlıq və model bir obyektə çevrilir.
+
+</Section>
+
+<Section id="column-transformer">
+
+Fərqli sütunlara fərqli emal lazımdır: ədədi sütunlara doldurma + miqyaslama, kateqoriyalara one-hot. `ColumnTransformer` hər sütun qrupuna öz pipeline-ını tətbiq edir və nəticələri **yan-yana birləşdirir**:
+
+<Media id="ch02.media.preprocessing-pipeline" />
+
+```python
+preprocessing = ColumnTransformer([
+    ("sahe", area_pipeline, ["sahe"]),
+    ("mertebe_nisbeti", ratio_pipeline(), ["mertebe", "bina_mertebe"]),
+    ("say", num_pipeline, ["otaq_sayi", "metro_mesafe", "enlik", "uzunluq"]),
+    ("temir", temir_pipeline, ["temir"]),
+    ("kateqoriya", cat_pipeline, ["rayon", "tikili"]),
+], remainder="passthrough")
+```
+
+Hər qolun üç komponenti var: **ad** (iki alt xətt olmamalıdır), **transformer** və **sütunların siyahısı**. Siyahıda olmayan sütunlar defolt olaraq atılır. `remainder="passthrough"` isə onları olduğu kimi saxlayır. Bizdə bu, `kupca` (0/1) sütunudur.
+
+`get_feature_names_out()` metodu yekun 20 əlamətin adlarını qaytarır: `sahe__sahe`, `kateqoriya__rayon_Səbail` və s. Bu, əlamət əhəmiyyətini şərh etmək üçün çox faydalıdır.
+
+</Section>
+
+<Section id="python">
+
+Tam pipeline aşağıdadır. Bu fayl növbəti üç skript üçün “kitabxana” rolunu oynayır: `train_models.py`, `fine_tune.py` və `save_model.py` onu `from pipeline import preprocessing` ilə idxal edir. Ona görə də hər dörd faylı eyni qovluqda saxlayın.
+
+<PythonExample id="ch02.code.pipeline" />
+
+</Section>
+
+<Section id="mistakes">
+
+- **`FunctionTransformer`-ə lambda vermək.** Pipeline işləyəcək, lakin `joblib.dump()` ilə saxlamaq alınmayacaq: lambda funksiyaları *pickle* oluna bilmir. Bu kursun skriptlərini hazırlayarkən məhz bu xəta ilə qarşılaşdıq: `Can't pickle <function <lambda>>`. Həll: modul səviyyəsində adlı funksiya (`column_ratio`).
+- **Konstruktorda iş görmək.** `__init__` yalnız hiperparametrləri saxlamalıdır. Hesablamalar `fit()`-də aparılır, əks halda `clone()` və hiperparametr axtarışı səhv işləyir.
+- **`fit()`-dən `self` qaytarmamaq.** Pipeline zəncirlənməsi pozulur.
+- **Ədədi sütun siyahısında kateqoriya unutmaq.** Mətn sütunu `StandardScaler`-ə düşür və xəta verir. `make_column_selector(dtype_include=np.number)` sütunları tipə görə avtomatik seçir.
+
+</Section>
+
+<Section id="summary">
+
+- Scikit-Learn: **estimator** (`fit`), **transformer** (`transform`), **predictor** (`predict`). Öyrənilmiş atributlar `_` ilə bitir.
+- Xüsusi transformer: `BaseEstimator` + `TransformerMixin`, konstruktorda yalnız hiperparametrlər olur.
+- **Pipeline** addımları zəncirləyir, **ColumnTransformer** sütun qruplarına fərqli emal tətbiq edir.
+- Pickle olunmalı funksiyalar **lambda deyil, adlı** olmalıdır.
+
+</Section>

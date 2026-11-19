@@ -1,0 +1,78 @@
+<Section id="model">
+
+İndiyə qədər modelləri “qara qutu” kimi istifadə etdik: `fit()` çağırdıq, nəticə aldıq. Bu fəsildə qutunu açırıq. Modellərin necə öyrəndiyini bilmək üç baxımdan vacibdir:
+
+- doğru modeli və doğru təlim alqoritmini **tez seçməyə** kömək edir;
+- hiperparametrləri **ağılla tənzimləməyə** imkan verir;
+- səhvləri **düzəltməyi** asanlaşdırır.
+
+Ən sadə modeldən başlayırıq: <Term id="linear-regression" full />. Fəsil 1-də onu bir əlamət üçün gördük. Ümumi halda proqnoz bütün əlamətlərin çəkili cəmi və sabit bir hədddir (kəsişmə):
+
+$$
+\hat{y} = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + \cdots + \theta_n x_n
+$$
+
+- $\hat{y}$ — proqnoz;
+- $n$ — əlamətlərin sayı, $x_i$ — $i$-ci əlamətin qiyməti;
+- $\theta_j$ — $j$-ci <Term id="model-parameter" />: $\theta_0$ kəsişmə, $\theta_1 \ldots \theta_n$ isə əlamətlərin çəkiləridir.
+
+</Section>
+
+<Section id="vector-form">
+
+Eyni düsturu vektorlarla qısa yazmaq olar. Bunun üçün hər nümunəyə həmişə 1-ə bərabər olan **$x_0$** əlaməti əlavə edirik. Beləliklə $\theta_0$ da başqa çəkilər kimi bir əlamətə vurulur:
+
+$$
+\hat{y} = h_{\boldsymbol{\theta}}(\mathbf{x}) = \boldsymbol{\theta} \cdot \mathbf{x} = \boldsymbol{\theta}^{\intercal}\mathbf{x}
+$$
+
+- $\boldsymbol{\theta} = (\theta_0, \theta_1, \ldots, \theta_n)$ — parametr vektoru;
+- $\mathbf{x} = (1, x_1, \ldots, x_n)$ — əlamət vektoru;
+- $\boldsymbol{\theta}^{\intercal}\mathbf{x}$ — skalyar hasil (sətir vektoru ilə sütun vektorunun hasili).
+
+Bütün nümunələr üçün proqnozları **bir matris hasili** ilə hesablamaq mümkündür. $\mathbf{X}_b$ hər sətri bir nümunə olan və birinci sütunu birlərdən ibarət matrisdirsə:
+
+$$
+\hat{\mathbf{y}} = \mathbf{X}_b \, \boldsymbol{\theta}
+$$
+
+<Callout variant="tip" title="Niyə vektorlaşdırma?">
+NumPy-da `X_b @ theta` əməliyyatı Python dövrü ilə nümunələr üzərindən keçməkdən onlarla, bəzən yüzlərlə dəfə sürətlidir. Hesablama optimallaşdırılmış C/BLAS kodunda aparılır. Bu fəsildəki bütün düsturlar matris şəklində yazılıb, çünki kod da məhz belə yazılır.
+</Callout>
+
+</Section>
+
+<Section id="cost">
+
+Modeli öyrətmək ən yaxşı $\boldsymbol{\theta}$-nı tapmaq deməkdir. “Ən yaxşı” sözünü ölçmək üçün <Term id="cost-function" full /> lazımdır. Reqressiyada adətən MSE istifadə olunur:
+
+$$
+\text{MSE}(\boldsymbol{\theta}) = \frac{1}{m}\sum_{i=1}^{m}\left(\boldsymbol{\theta}^{\intercal}\mathbf{x}^{(i)} - y^{(i)}\right)^2
+$$
+
+Fəsil 2-də performansı RMSE ilə ölçdük. Təlimdə isə MSE-ni minimallaşdırmaq daha rahatdır. İkisini minimallaşdıran $\boldsymbol{\theta}$ eynidir, çünki kvadrat kök artan funksiyadır. MSE-nin törəməsi isə daha sadədir.
+
+<Callout variant="insight">
+Təlimdə minimallaşdırılan xərc funksiyası ilə qiymətləndirmə metrikası fərqli ola bilər. Xərc funksiyası **optimallaşdırmaq üçün rahat**, metrika isə **biznes məqsədinə yaxın** seçilir. Məsələn, təsnifatda log itki minimallaşdırılır, qiymətləndirmə isə precision/recall ilə aparılır.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+Aşağıdakı skript sintetik məlumat yaradır. Həqiqi parametrlər $\theta_0 = 3$, $\theta_1 = 1.8$-dir. Skript üç fərqli $\boldsymbol{\theta}$ üçün MSE-ni vektorlaşdırılmış şəkildə hesablayır:
+
+<PythonExample id="ch04.code.linear-model" />
+
+Həqiqi parametrlərə yaxınlaşdıqca MSE kəskin azalır: 33.3 → 0.653 → 0.195. Lakin sıfıra enmir, çünki məlumatda küy var (standart kənarlaşma 0.5). Növbəti iki dərsdə ən kiçik MSE-ni verən $\boldsymbol{\theta}$-nı iki fərqli yolla tapacağıq.
+
+</Section>
+
+<Section id="summary">
+
+- Xətti model: $\hat{y} = \boldsymbol{\theta}^{\intercal}\mathbf{x}$. $x_0 = 1$ hiyləsi kəsişməni vektora daxil edir.
+- Bütün proqnozlar: $\hat{\mathbf{y}} = \mathbf{X}_b\boldsymbol{\theta}$. Bu, vektorlaşdırılmış və sürətli hesablamadır.
+- Təlim **MSE-ni minimallaşdıran** $\boldsymbol{\theta}$-nı tapmaqdır.
+- Xərc funksiyası və qiymətləndirmə metrikası fərqli ola bilər.
+
+</Section>

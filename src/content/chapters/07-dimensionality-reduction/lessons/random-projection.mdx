@@ -1,0 +1,55 @@
+<Section id="idea">
+
+Ölçü çox böyük olduqda, məsələn on minlərlə əlamət olduqda, PCA belə yavaşlayır. Daha radikal bir yanaşma var: məlumatı **təsadüfi** xətti xəritə ilə aşağı ölçüyə köçürmək. Bu, <Term id="random-projection" full />dir.
+
+Paradoksal görünür: təsadüfi istiqamətlərə proyeksiya necə faydalı ola bilər? Riyaziyyatçılar sübut ediblər ki, yüksək ölçüdə təsadüfi proyeksiya nöqtələr arasındakı **məsafələri yüksək ehtimalla təxminən qoruyur**. Oxşar nümunələr oxşar, fərqli nümunələr isə fərqli qalır. Məsafəyə əsaslanan alqoritmlər üçün, məsələn k-NN, klasterləşdirmə və SVM üçün, bu kifayətdir.
+
+Üstünlükləri bunlardır:
+
+- məlumatdan **heç nə öyrənmək lazım deyil**, matris sadəcə təsadüfi yaradılır;
+- çox **sürətlidir**, xüsusən seyrək versiyası;
+- məlumatı əvvəlcədən görmədən də tətbiq oluna bilər.
+
+</Section>
+
+<Section id="jl">
+
+Bu, <Term id="johnson-lindenstrauss" full />na əsaslanır. $m$ nöqtənin bütün cüt məsafələrinin $1 \pm \varepsilon$ dəqiqliklə saxlanması üçün təxminən aşağıdakı qədər ölçü kifayətdir:
+
+$$
+d \geq \frac{4 \log m}{\dfrac{\varepsilon^2}{2} - \dfrac{\varepsilon^3}{3}}
+$$
+
+Ən maraqlı nəticə budur: **$d$ orijinal ölçü sayından ($n$) asılı deyil**. O, yalnız nümunə sayından və icazə verilən xətadan asılıdır. 2 000 nümunə üçün:
+
+| İcazə verilən xəta ε | Lazım olan ölçü d |
+|---|---|
+| 10% | 6 515 |
+| 20% | 1 754 |
+| 30% | 844 |
+
+Orijinal ölçü 10 000, 1 milyon və ya 1 milyard olsa belə, hədd eynidir. Ona görə də təsadüfi proyeksiya **çox yüksək ölçülü** məlumatda xüsusilə faydalıdır.
+
+Scikit-Learn-də iki variant var:
+
+- `GaussianRandomProjection` — matris elementləri normal paylanmadan götürülür;
+- `SparseRandomProjection` — matrisin çox hissəsi sıfırdır. Daha sürətlidir, daha az yaddaş tələb edir və keyfiyyəti demək olar ki, eynidir. Praktikada adətən buna üstünlük verilir.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch07.code.random-projection" />
+
+10 000 ölçülü məlumat 1 754 ölçüyə endirildikdən sonra 500 təsadüfi cütün məsafə nisbəti **0.953–1.057** aralığındadır, yəni ±20% sərhədinin xeyli içində qalır. Lemma ən pis hal üçün zəmanətdir. Praktikada nəticə adətən daha yaxşı olur.
+
+</Section>
+
+<Section id="summary">
+
+- **Təsadüfi proyeksiya** məlumatı təsadüfi xətti xəritə ilə aşağı ölçüyə köçürür və məsafələri təxminən qoruyur.
+- **Conson–Lindenştraus lemması:** lazım olan ölçü yalnız $m$ və $\varepsilon$-dan asılıdır, $n$-dən asılı deyil.
+- Heç nə öyrənmir, çox sürətlidir. **Seyrək** versiyası praktikada daha sərfəlidir.
+- Ən çox çox yüksək ölçülü məlumatda (mətn, genomika) məsafəyə əsaslanan alqoritmlərdən əvvəl istifadə olunur.
+
+</Section>

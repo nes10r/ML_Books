@@ -1,0 +1,84 @@
+<Section id="variance">
+
+<Term id="pca" full /> ən populyar ölçü azaltma alqoritmidir. Əvvəlcə məlumata ən yaxın yerləşən hipermüstəvini tapır, sonra məlumatı ona proyeksiya edir.
+
+Bəs hansı hipermüstəvi ən yaxşıdır? 2D nöqtələri bir xəttə proyeksiya etdiyimizi düşünək. Fərqli xətlər fərqli nəticə verir:
+
+- bəzi xətlər üzərində proyeksiyalar geniş yayılır, yəni **dispersiya böyükdür** və nöqtələr arasındakı fərqlər saxlanılır;
+- bəzilərində isə proyeksiyalar bir yerə yığılır və informasiya itir.
+
+PCA **dispersiyanı maksimum saxlayan** oxu seçir. Bu, eyni zamanda nöqtələrlə onların proyeksiyaları arasındakı **orta kvadrat məsafəni minimallaşdıran** oxdur. İki meyar ekvivalentdir, çünki hər nöqtə üçün Pifaqor teoremi ödənir:
+
+$$
+\lVert \mathbf{x} \rVert^2 = p^2 + q^2
+$$
+
+Burada $p$ nöqtənin ox üzərindəki proyeksiyasının uzunluğu, $q$ isə nöqtədən oxa qədər olan məsafədir. Ümumi dispersiya sabitdir. Ona görə də $p^2$-nin ortasını maksimum etmək $q^2$-nin ortasını minimum etmək deməkdir.
+
+</Section>
+
+<Section id="simulation">
+
+Oxu fırladın və proyeksiyaların dispersiyasının necə dəyişdiyini izləyin. Qırmızı nöqtələr proyeksiyalar, solğun xətlər isə itirilən informasiyadır.
+
+<Demo id="pca-projection" />
+
+Aşağıdakı əyri dispersiyanın bucaqdan asılılığını göstərir. Maksimum (yaşıl nöqtə) **birinci əsas komponentdir**, minimum isə ona perpendikulyar istiqamətdədir. İki komponentli məlumatda ikinci əsas komponent məhz budur.
+
+</Section>
+
+<Section id="components">
+
+PCA dispersiyanın ən böyük olduğu oxu tapır. Bu, **birinci əsas komponentdir** (PC1). Sonra ona perpendikulyar istiqamətlər arasında qalan dispersiyanın ən böyük olduğu oxu tapır. Bu, ikinci komponentdir, və s. $n$ ölçülü məlumatda $n$ əsas komponent var. Hər <Term id="principal-component" full /> mərkəzdən çıxan vahid vektordur.
+
+<Callout variant="info">
+Komponentin **istiqaməti** sabit deyil: məlumat bir az dəyişsə, vektor əks tərəfə çevrilə bilər, yəni işarəsi dəyişə bilər. Lakin onun müəyyən etdiyi **ox** eyni qalır.
+</Callout>
+
+Komponentləri tapmaq üçün standart matris parçalanması istifadə olunur: <Term id="svd" full />. Mərkəzləşdirilmiş məlumat matrisi $\mathbf{X}$ üç matrisin hasilinə ayrılır:
+
+$$
+\mathbf{X} = \mathbf{U}\,\boldsymbol{\Sigma}\,\mathbf{V}^{\intercal}
+$$
+
+$\mathbf{V}$-nin sütunları əsas komponentlərdir: $\mathbf{c}_1, \mathbf{c}_2, \ldots, \mathbf{c}_n$. $\boldsymbol{\Sigma}$-nın diaqonalındakı təklik qiymətlərinin kvadratları isə hər komponent boyunca dispersiya ilə mütənasibdir.
+
+Ekvivalent yol kovariasiya matrisinin **məxsusi vektorlarını** tapmaqdır. Bu fəslin brauzer demoları məhz bunu edir (Jacobi alqoritmi ilə).
+
+<Callout variant="warning">
+PCA məlumatın **mərkəzləşdirilməsini** tələb edir. Scikit-Learn-in `PCA` sinfi ortanı özü çıxır. SVD-ni əl ilə hesablayırsınızsa, bunu unutmayın.
+</Callout>
+
+</Section>
+
+<Section id="projecting">
+
+Əsas komponentlər tapıldıqdan sonra ölçünü $d$-yə endirmək üçün məlumat ilk $d$ komponentin əmələ gətirdiyi hipermüstəviyə proyeksiya olunur:
+
+$$
+\mathbf{X}_{d\text{-proj}} = \mathbf{X}\,\mathbf{W}_d
+$$
+
+Burada $\mathbf{W}_d$ $\mathbf{V}$-nin ilk $d$ sütunundan ibarət matrisdir. Hər komponent boyunca dispersiyanın ümumi dispersiyaya nisbəti <Term id="explained-variance-ratio" full /> adlanır. O, hər komponentin nə qədər informasiya daşıdığını göstərir.
+
+</Section>
+
+<Section id="python">
+
+Python nümunəsi demək olar ki, bir müstəvi üzərində yerləşən 3D məlumat yaradır. Əsas komponentlər əvvəlcə SVD ilə əl ilə, sonra Scikit-Learn ilə tapılır:
+
+<PythonExample id="ch07.code.pca" />
+
+- Əl ilə və Scikit-Learn ilə tapılan komponentlər **eynidir**, yalnız işarəsi fərqlidir. Proyeksiyalar da üst-üstə düşür.
+- İzah olunan dispersiya: birinci komponent **92.9%**, ikinci 6.9%. 3D məlumat 2D-yə endirildikdə cəmi **0.19%** dispersiya itir. Məlumat həqiqətən demək olar ki, müstəvidir.
+
+</Section>
+
+<Section id="summary">
+
+- **PCA** dispersiyanı maksimum saxlayan, yəni proyeksiya xətasını minimallaşdıran ortoqonal oxları tapır.
+- Əsas komponentlər **SVD** ilə ($\mathbf{X} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\intercal}$) və ya kovariasiyanın məxsusi vektorları ilə tapılır.
+- $d$ ölçüyə proyeksiya: $\mathbf{X}\mathbf{W}_d$. **İzah olunan dispersiya payı** hər komponentin informasiyasını ölçür.
+- Məlumat **mərkəzləşdirilməlidir**. Böyük miqyaslı əlamətlər üstünlük təşkil etməsin deyə adətən standartlaşdırılır.
+
+</Section>

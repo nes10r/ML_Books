@@ -1,0 +1,70 @@
+<Section id="closed-form">
+
+MSE-ni minimallaşdıran $\boldsymbol{\theta}$-nı tapmağın ilk yolu **birbaşa düsturdur**. MSE $\boldsymbol{\theta}$-ya görə kvadratik funksiyadır, yəni “çanaq” formasındadır. Onun ən aşağı nöqtəsində qradiyent sıfırdır. Bu şərtdən <Term id="normal-equation" full /> alınır:
+
+$$
+\hat{\boldsymbol{\theta}} = \left(\mathbf{X}_b^{\intercal}\mathbf{X}_b\right)^{-1}\mathbf{X}_b^{\intercal}\,\mathbf{y}
+$$
+
+Bu, qapalı həlldir: bir neçə matris əməliyyatı ilə dəqiq cavab alınır. İterasiya, öyrənmə sürəti və yığılma problemi yoxdur.
+
+Düsturun haradan gəldiyini qısaca göstərək. MSE-nin qradiyenti belədir:
+
+$$
+\nabla_{\boldsymbol{\theta}}\,\text{MSE}(\boldsymbol{\theta}) = \frac{2}{m}\mathbf{X}_b^{\intercal}\left(\mathbf{X}_b\boldsymbol{\theta} - \mathbf{y}\right)
+$$
+
+Onu sıfıra bərabər edirik: $\mathbf{X}_b^{\intercal}\mathbf{X}_b\boldsymbol{\theta} = \mathbf{X}_b^{\intercal}\mathbf{y}$. Sonra hər iki tərəfi $(\mathbf{X}_b^{\intercal}\mathbf{X}_b)^{-1}$-ə vururuq.
+
+</Section>
+
+<Section id="pseudoinverse">
+
+Düsturda bir problem var: $\mathbf{X}_b^{\intercal}\mathbf{X}_b$ matrisinin tərsi **həmişə mövcud deyil**. Məsələn, iki əlamət bir-birinin qatıdırsa (sahə m² və sm² ilə) və ya əlamət sayı nümunə sayından çoxdursa, matris singulyar olur.
+
+Praktikada <Term id="pseudoinverse" full /> $\mathbf{X}^{+}$ istifadə olunur: $\hat{\boldsymbol{\theta}} = \mathbf{X}_b^{+}\mathbf{y}$. O, **SVD** adlanan standart matris parçalanması ilə hesablanır:
+
+1. $\mathbf{X} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\intercal}$ parçalanması tapılır.
+2. $\boldsymbol{\Sigma}$-dakı çox kiçik təklik qiymətləri sıfırlanır, qalanları tərs çevrilir.
+3. $\mathbf{X}^{+} = \mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\intercal}$.
+
+Bu yol ədədi baxımdan daha dayanıqlıdır və singulyar halda da işləyir. O, minimal normalı həlli qaytarır. Scikit-Learn-in `LinearRegression` sinfi də daxildə buna oxşar (`scipy.linalg.lstsq`) yoldan istifadə edir.
+
+</Section>
+
+<Section id="complexity">
+
+Normal tənliyin “zəif yeri” sürətdir. $n$ əlamət üçün $(n+1) \times (n+1)$ ölçülü matrisin tərsini tapmaq təxminən $O(n^{2.4})$–$O(n^{3})$ əməliyyat tələb edir. SVD isə təxminən $O(n^2)$ əməliyyatdır.
+
+| Nə artır? | Təlim vaxtı | Proqnoz vaxtı |
+|---|---|---|
+| Nümunə sayı $m$ ×2 | ≈ ×2 (xətti) | ≈ ×2 |
+| Əlamət sayı $n$ ×2 | ≈ ×4–8 | ≈ ×2 |
+
+Nəticələr belədir:
+
+- **Çoxlu nümunə, az əlamət** (məs. 1 milyon mənzil, 20 əlamət): normal tənlik əla işləyir, əgər məlumat yaddaşa sığırsa.
+- **Çoxlu əlamət** (yüz minlərlə) və ya **yaddaşa sığmayan məlumat**: qradiyent enmə lazımdır (növbəti dərs).
+
+Proqnoz isə həmişə ucuzdur: sadəcə $\boldsymbol{\theta}^{\intercal}\mathbf{x}$ hasili.
+
+</Section>
+
+<Section id="python">
+
+Eyni həlli üç yolla tapırıq və `LinearRegression` ilə müqayisə edirik. Skriptin sonu əlamət sayı artdıqca `pinv`-in necə yavaşladığını göstərir. Vaxtlar kompüterinizdən asılı olaraq fərqlənəcək, lakin artım meyli eyni qalacaq.
+
+<PythonExample id="ch04.code.normal-equation" />
+
+Dörd yolun hamısı eyni cavabı verir: $\theta_0 \approx 3.004$, $\theta_1 \approx 1.754$. Həqiqi qiymətlər 3 və 1.8 idi. Fərq küydən irəli gəlir: 100 nümunə ilə parametrləri ancaq təxmini tapmaq olar.
+
+</Section>
+
+<Section id="summary">
+
+- **Normal tənlik:** $\hat{\boldsymbol{\theta}} = (\mathbf{X}_b^{\intercal}\mathbf{X}_b)^{-1}\mathbf{X}_b^{\intercal}\mathbf{y}$. Dəqiq həll bir addımda alınır.
+- Praktikada **psevdo-tərs** (SVD) istifadə olunur: daha dayanıqlıdır və singulyar halda da işləyir.
+- Mürəkkəblik nümunə sayına görə xətti, əlamət sayına görə **təxminən kubikdir**.
+- Çoxlu əlamət və ya böyük məlumat üçün **qradiyent enmə** lazımdır.
+
+</Section>

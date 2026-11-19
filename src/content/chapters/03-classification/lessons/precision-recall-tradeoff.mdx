@@ -1,0 +1,68 @@
+<Section id="decision-function">
+
+`SGDClassifier` hər şəkil üçün əvvəlcə bir bal hesablayır. Bu bal <Term id="decision-function" full /> adlanır. Sonra onu <Term id="decision-threshold" full /> ilə müqayisə edir: bal həddən böyükdürsə, proqnoz “5” olur. `predict()` həddi 0 qəbul edir. Biz isə balları birbaşa alıb həddi özümüz seçə bilərik:
+
+```python
+y_scores = sgd_clf.decision_function(X_train[:5])   # məs. -2293.4, -3785.2, 1054.1, ...
+y_pred = y_scores >= threshold
+```
+
+Ballar sıralanmış kimi düşünün: solda “5 olmadığına əmin”, sağda “5 olduğuna əmin” şəkillər. Hədd bu sıranı kəsən xəttdir:
+
+- **Həddi sağa çəkmək** (artırmaq): yalnız çox əmin olunan şəkillər “5” sayılır. Yanlış həyəcanlar (FP) azalır → **precision artır**. Lakin bəzi həqiqi 5-lər həddin solunda qalır (FN artır) → **recall azalır**.
+- **Həddi sola çəkmək:** əksinə olur.
+
+Bu, <Term id="precision-recall-tradeoff" full />dur. Hər iki metrikanı eyni anda artırmaq üçün hədd kifayət etmir. Bunun üçün **daha yaxşı model** lazımdır.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada 1 437 təlim şəklinin çarpaz validasiya balları göstərilir. Göy sütunlar həqiqi 5-ləri (yuxarıda), boz sütunlar isə digər rəqəmləri (aşağıda) göstərir. Qırmızı xətt həddir: onun sağındakı hər şey “5” sayılır.
+
+<Demo id="threshold-explorer" />
+
+Müşahidə edin: iki paylanma **qismən üst-üstə düşür**. Hədd harada olursa olsun, onun hansısa tərəfində səhvlər qalacaq. Təsadüfi meşəyə keçdikdə üst-üstə düşmə xeyli azalır. Bu, daha yaxşı ayıran modelin əlamətidir.
+
+</Section>
+
+<Section id="choosing">
+
+Həddi “gözəl görünənə” görə yox, **biznes tələbinə** görə seçirik. Tutaq ki, tələb belədir: “model ‘5’ deyəndə ən azı 98% haqlı olmalıdır”.
+
+1. Bütün təlim şəkilləri üçün çarpaz validasiya ballarını alın: `cross_val_predict(..., method="decision_function")`.
+2. `precision_recall_curve(y, scores)` ilə hər mümkün hədd üçün precision və recall hesablayın.
+3. Precision ≥ 0.98 şərtini ödəyən **ən kiçik** həddi tapın. Ən kiçik hədd, çünki həmin precision-da recall-u maksimum saxlayır.
+4. Həmin həddə recall-un nə qədər olduğunu yoxlayın və biznes ilə razılaşdırın.
+
+Bizim modeldə nəticə belədir: hədd ≈ 87 olduqda **precision = 98.4%**, **recall = 85.5%**. Müqayisə üçün defolt hədd (0) precision 97.0%, recall 88.3% verirdi. Precision-a 1.4 bənd qazandırmaq üçün 5-lərin təxminən 3%-ni əlavə olaraq buraxmalı olduq.
+
+<Callout variant="tip">
+Scikit-Learn 1.5-dən bəri bu prosesi avtomatlaşdıran `TunedThresholdClassifierCV` sinfi var. O, seçdiyiniz metrikanı maksimuma çatdıran həddi çarpaz validasiya ilə tapır.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch03.code.threshold" />
+
+</Section>
+
+<Section id="mistakes">
+
+- **Həddi test dəstinə görə seçmək.** Hədd də bir hiperparametrdir və çarpaz validasiya və ya validasiya dəsti ilə seçilməlidir.
+- **“99% precision olsun” tələbini recall-u soruşmadan qəbul etmək.** Çox yüksək hədd recall-u məhv edə bilər. Simulyasiyada hədd 500 olduqda recall cəmi 44%-dir.
+- **Fərqli modellərin ballarını eyni hədd ilə müqayisə etmək.** SGD balı minlərlədir, təsadüfi meşə isə 0–1 arasında ehtimal verir. Hədd hər model üçün ayrıca seçilir.
+- **Precision əyrisinin həmişə hamar artdığını düşünmək.** Çox yüksək hədlərdə müsbət proqnoz azdır və bir səhv precision-u kəskin dəyişir. Əyri “dişli” ola bilər.
+
+</Section>
+
+<Section id="summary">
+
+- Təsnifatçı əvvəlcə **bal** hesablayır, sonra onu **hədd** ilə müqayisə edir.
+- Həddi artırmaq **precision ↑, recall ↓**, azaltmaq isə əksinə.
+- Hədd biznes tələbinə görə **PR əyrisindən** seçilir: precision ≥ 98% → hədd ≈ 87, recall 85.5%.
+- Hər iki metrikanı birlikdə artırmaq üçün **daha yaxşı model** lazımdır.
+
+</Section>

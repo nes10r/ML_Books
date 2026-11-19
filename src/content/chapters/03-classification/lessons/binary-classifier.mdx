@@ -1,0 +1,66 @@
+<Section id="binary-task">
+
+Problemi sadələşdirərək başlayaq. On rəqəmin hamısını yox, yalnız bir rəqəmi tanıyaq: **“Bu şəkil 5-dirmi?”**. Bu, <Term id="binary-classifier" full /> tapşırığıdır: iki sinif var, “5” və “5 deyil”.
+
+Etiketləri True/False vektoruna çeviririk:
+
+```python
+y_train_5 = (y_train == 5)   # True: 5, False: digər bütün rəqəmlər
+```
+
+Təlim dəstinin cəmi **10.1%**-i 5-dir. Bu, <Term id="skewed-dataset" full />dır: “mənfi” sinif müsbətdən təxminən 9 dəfə çoxdur. Bu fakt bütün dərsin açarıdır.
+
+</Section>
+
+<Section id="sgd">
+
+İlk model kimi `SGDClassifier` seçirik. O, Fəsil 1-də onlayn öyrənmə simulyasiyasında gördüyümüz stoxastik qradiyent enmə ilə öyrənən xətti təsnifatçıdır:
+
+- nümunələri **bir-bir** emal edir, ona görə də böyük məlumatda sürətlidir və onlayn öyrənməyə uyğundur;
+- hər şəkil üçün bir **bal** hesablayır: 64 pikselin çəkili cəmi. Bal 0-dan böyükdürsə, proqnoz “5” olur.
+
+```python
+sgd_clf = SGDClassifier(random_state=42)   # təsadüfilik var → random_state
+sgd_clf.fit(X_train, y_train_5)
+sgd_clf.predict(X_train[:5])
+```
+
+İlk beş şəkil üçün proqnozlar həqiqətlə tam üst-üstə düşür. Yaxşı başlanğıcdır. Bəs model ümumilikdə nə qədər yaxşıdır?
+
+</Section>
+
+<Section id="accuracy-trap">
+
+Fəsil 2-dən bildiyimiz kimi, modeli çarpaz validasiya ilə qiymətləndiririk. Təsnifat üçün ilk ağla gələn metrika <Term id="accuracy" full />dır: düzgün proqnozların payı.
+
+| Model | 3 qatlı CV dəqiqliyi |
+|---|---|
+| SGDClassifier | 98.3% · 99.0% · 98.3% |
+| ??? | 89.8% · 90.0% · 90.0% |
+
+98–99% əla nəticə kimi görünür. Bəs ikinci sətirdəki model nədir? Bu, <Term id="dummy-classifier" full />dır. O, şəkilə **heç baxmır** və həmişə ən çox rast gələn sinfi, yəni “5 deyil”i deyir. Şəkillərin ~90%-i 5 olmadığı üçün o, heç nə öyrənmədən 90% “dəqiqlik” qazanır.
+
+<Callout variant="warning" title="Dərs">
+Balanssız məlumatda dəqiqlik **aldadıcı metrikadır**. 99% dəqiqlik həm əla model, həm də demək olar ki, işə yaramayan model ola bilər. Həmişə sadə baza modeli ilə müqayisə edin və növbəti dərsdəki daha informativ metrikalardan istifadə edin.
+</Callout>
+
+Real həyatda bu tələ daha da təhlükəlidir. Saxta kart əməliyyatları 0.1%-dirsə, “heç vaxt saxta deyil” deyən sistem 99.9% dəqiqlik göstərir və heç bir saxtakarlığı tutmur.
+
+</Section>
+
+<Section id="python">
+
+Aşağıdakı skript SGD və baza modelini eyni şəraitdə müqayisə edir:
+
+<PythonExample id="ch03.code.binary" />
+
+</Section>
+
+<Section id="summary">
+
+- İkili tapşırıq: **“5-dirmi?”**. Müsbət sinif cəmi ~10%-dir, yəni məlumat balanssızdır.
+- `SGDClassifier`: xətti, sürətli, hər şəkil üçün **bal** hesablayır.
+- SGD-nin dəqiqliyi ~98.5%, lakin **heç nə öyrənməyən** baza modeli də ~90% alır.
+- Balanssız məlumatda **dəqiqlik kifayət deyil**: həmişə baza ilə müqayisə edin.
+
+</Section>

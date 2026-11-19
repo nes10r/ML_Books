@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" font-family="Inter, system-ui, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">Qarışıqlıq matrisi və metrikalar</title>
+  <desc id="d">TN=1288, FP=4, FN=17, TP=128. Precision = 128/(128+4) ≈ 0.97 proqnoz “5” sütunu üzrə, recall = 128/(128+17) ≈ 0.88 həqiqi “5” sətri üzrə hesablanır.</desc>
+  <rect width="960" height="420" rx="20" fill="#ffffff"/>
+  <text x="400" y="44" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">PROQNOZ</text>
+  <text x="300" y="76" text-anchor="middle" font-size="14" fill="#475569">“5 deyil”</text>
+  <text x="500" y="76" text-anchor="middle" font-size="14" fill="#475569">“5”</text>
+  <text transform="translate(66 250) rotate(-90)" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">HƏQİQƏT</text>
+  <text x="180" y="170" text-anchor="end" font-size="14" fill="#475569">5 deyil</text>
+  <text x="180" y="320" text-anchor="end" font-size="14" fill="#475569">5</text>
+  <rect x="200" y="90" width="196" height="140" rx="12" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="298" y="150" text-anchor="middle" font-size="30" font-weight="700" fill="#065f46">1288</text>
+  <text x="298" y="180" text-anchor="middle" font-size="14" fill="#047857">TN — düzgün mənfi</text>
+  <rect x="404" y="90" width="196" height="140" rx="12" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="502" y="150" text-anchor="middle" font-size="30" font-weight="700" fill="#9f1239">4</text>
+  <text x="502" y="180" text-anchor="middle" font-size="14" fill="#be123c">FP — yanlış həyəcan</text>
+  <rect x="200" y="240" width="196" height="140" rx="12" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="298" y="300" text-anchor="middle" font-size="30" font-weight="700" fill="#9f1239">17</text>
+  <text x="298" y="330" text-anchor="middle" font-size="14" fill="#be123c">FN — buraxılmış 5</text>
+  <rect x="404" y="240" width="196" height="140" rx="12" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="502" y="300" text-anchor="middle" font-size="30" font-weight="700" fill="#065f46">128</text>
+  <text x="502" y="330" text-anchor="middle" font-size="14" fill="#047857">TP — düzgün müsbət</text>
+  <rect x="398" y="84" width="208" height="302" rx="16" fill="none" stroke="#4f46e5" stroke-width="3" stroke-dasharray="8 6"/>
+  <rect x="194" y="234" width="412" height="152" rx="16" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8 6"/>
+  <g font-size="15">
+    <rect x="650" y="110" width="280" height="110" rx="14" fill="#eef2ff"/>
+    <text x="670" y="142" font-weight="700" fill="#3730a3">Precision (sütun)</text>
+    <text x="670" y="172" fill="#3730a3">TP / (TP + FP)</text>
+    <text x="670" y="200" fill="#3730a3">= 128 / 132 ≈ 0.970</text>
+    <rect x="650" y="250" width="280" height="110" rx="14" fill="#fffbeb"/>
+    <text x="670" y="282" font-weight="700" fill="#b45309">Recall (sətir)</text>
+    <text x="670" y="312" fill="#b45309">TP / (TP + FN)</text>
+    <text x="670" y="340" fill="#b45309">= 128 / 145 ≈ 0.883</text>
+  </g>
+</svg>

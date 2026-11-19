@@ -1,0 +1,90 @@
+<Section id="multilabel">
+
+İndiyə qədər hər nümunəyə **bir** sinif verdik. Bəzən isə bir nümunəyə eyni anda bir neçə etiket lazımdır. Məsələn, üz tanıma sistemi bir fotoda üç nəfəri tanımalıdır: Aynur var? Rəşad yoxdur? Leyla var? Cavab `[1, 0, 1]` olur. Bu, <Term id="multilabel-classification" full />dır: hər nümunə üçün bir neçə **ikili** etiket.
+
+Sadə bir misal quraq. Hər rəqəm üçün iki etiket olsun:
+
+- **böyükdür:** rəqəm 7, 8 və ya 9-dur;
+- **təkdir:** rəqəm 1, 3, 5, 7 və ya 9-dur.
+
+```python
+y_multilabel = np.c_[y_train >= 7, y_train % 2 == 1]   # forma: (1437, 2)
+knn_clf = KNeighborsClassifier()
+knn_clf.fit(X_train, y_multilabel)
+knn_clf.predict(X_test[:1])                             # [[False, True]] → rəqəm 5
+```
+
+`KNeighborsClassifier` çoxetiketli təsnifatı təbii dəstəkləyir. Bütün modellər bunu etmir.
+
+</Section>
+
+<Section id="metrics">
+
+Çoxetiketli modeli qiymətləndirməyin bir yolu hər etiket üçün F1 hesablayıb ortalamaqdır. Bunun iki variantı var:
+
+$$
+F_1^{\text{macro}} = \frac{1}{L}\sum_{\ell=1}^{L} F_1^{(\ell)}, \qquad F_1^{\text{weighted}} = \frac{\sum_{\ell} n_\ell \, F_1^{(\ell)}}{\sum_{\ell} n_\ell}
+$$
+
+Burada $L$ etiketlərin sayı, $n_\ell$ isə $\ell$ etiketinin müsbət nümunələrinin sayıdır (*dəstək*, support).
+
+- **Macro** bütün etiketləri bərabər sayır. Nadir etiketdəki zəif nəticə ortanı aşağı salır.
+- **Weighted** çox rast gələn etiketlərə daha çox çəki verir.
+
+Bizim misalda macro F1 = 0.978, weighted F1 = 0.981 alınır. Fərq kiçikdir, çünki iki etiketin dəstəyi bir-birinə yaxındır. Etiketlərdən biri çox nadir olsaydı, fərq böyüyərdi.
+
+</Section>
+
+<Section id="chains">
+
+Bəzi modellər (məsələn, `SVC`) çoxetiketli təsnifatı dəstəkləmir. Ən sadə həll hər etiket üçün ayrıca model öyrətməkdir: `MultiOutputClassifier`. Lakin bu yanaşma etiketlər arasındakı **əlaqəni** nəzərə almır. Halbuki 9 həm böyük, həm də təkdir.
+
+`ClassifierChain` modelləri zəncir şəklində düzür:
+
+1. birinci model yalnız əlamətlərdən istifadə edərək 1-ci etiketi proqnozlaşdırır;
+2. ikinci model əlamətlərdən **və** 1-ci etiketdən istifadə edir;
+3. üçüncü model əlamətlərdən və əvvəlki iki etiketdən istifadə edir, və s.
+
+Təlimdə zəncirə həqiqi etiketlər verilir. `cv` parametri verildikdə isə çarpaz validasiya proqnozları verilir, beləliklə zəncir proqnoz zamanı əvvəlki modellərin səhvlərinə də öyrəşir.
+
+</Section>
+
+<Section id="multioutput">
+
+<Term id="multioutput-classification" full /> çoxetiketli təsnifatın ümumiləşdirilməsidir. Burada hər etiketin özü **çoxsinifli** ola bilər.
+
+Gözəl bir nümunə şəkildən küyün təmizlənməsidir:
+
+- **giriş:** küylü şəkil, yəni hər pikselə təsadüfi 0–8 əlavə edilib;
+- **çıxış:** təmiz şəkil, yəni **64 etiket**, hər biri 0–16 arasında qiymət alır.
+
+```python
+X_train_noisy = np.clip(X_train + rng.integers(0, 9, X_train.shape), 0, 16)
+knn_clf.fit(X_train_noisy, X_train)       # hədəf = orijinal təmiz şəkil
+cleaned = knn_clf.predict(X_test_noisy)
+```
+
+Nəticədə orta mütləq piksel xətası **3.35-dən 1.50-yə** enir. Model küylü şəkli təmiz təlim şəkillərinə “bənzədərək” bərpa edir.
+
+<Callout variant="info">
+Təsnifat ilə reqressiya arasındakı sərhəd burada bulanıqlaşır. Piksel intensivliyini proqnozlaşdırmaq reqressiyaya daha yaxındır. Bu tip tapşırıqlar Fəsil 18-də avtokodlayıcılar və diffuziya modelləri ilə daha güclü şəkildə həll olunur.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch03.code.multilabel" />
+
+</Section>
+
+<Section id="summary">
+
+- **Çoxetiketli:** hər nümunəyə bir neçə ikili etiket (“böyük”, “tək”).
+- Qiymətləndirmə: hər etiket üçün F1, **macro** (bərabər) və ya **weighted** (dəstəyə görə) orta: 0.978 / 0.981.
+- Etiketlər arasındakı əlaqə üçün **ClassifierChain**. Dəstəkləməyən modellər üçün **MultiOutputClassifier**.
+- **Çoxçıxışlı:** hər etiket çoxsinifli ola bilər. Küy təmizləmə nümunəsində xəta 3.35 → 1.50.
+
+Təbriklər! Fəsil 3-ü tamamladınız. Bilikləri yoxlamaq üçün [Fəsil 3-ün yekun testini](/exercises/ch03.quiz.final) həll edin.
+
+</Section>

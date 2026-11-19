@@ -1,0 +1,62 @@
+<Section id="elbow">
+
+k-means $k$-nı bilməlidir, real məlumatda isə o, adətən məlum deyil. İlk ağla gələn fikir ən kiçik inertia-nı verən $k$-nı seçməkdir. **Bu, işləmir:** inertia $k$ artdıqca həmişə azalır. $k = m$ olduqda hər nöqtə öz mərkəzidir və inertia sıfırdır.
+
+<Term id="elbow-method" full /> inertia-nın $k$-ya görə qrafikinə baxır. Əvvəlcə inertia sürətlə düşür, çünki hər yeni mərkəz həqiqi bir qrupu tapır. Müəyyən nöqtədən sonra düşüş yavaşlayır: yeni mərkəzlər artıq mövcud qrupları bölür. Qrafikin kəskin əyildiyi bu nöqtə “dirsəkdir” və yaxşı namizəddir.
+
+Dirsək həmişə aydın görünmür və bu üsul kobud qiymətləndirmədir.
+
+</Section>
+
+<Section id="silhouette">
+
+Daha dəqiq, lakin hesablama baxımından daha bahalı ölçü <Term id="silhouette-score" full />dır. Hər nöqtə üçün:
+
+- $a$ — eyni klasterdəki digər nöqtələrə **orta** məsafə, yəni klaster daxilində sıxlıq;
+- $b$ — **ən yaxın digər** klasterin nöqtələrinə orta məsafə.
+
+$$
+s = \frac{b - a}{\max(a, b)}
+$$
+
+Silhouette əmsalı $-1$ ilə $+1$ arasındadır:
+
+- **+1-ə yaxın:** nöqtə öz klasterinin içindədir və digərlərindən uzaqdır;
+- **0-a yaxın:** nöqtə iki klasterin sərhədindədir;
+- **mənfi:** nöqtə yəqin ki, səhv klasterə düşüb.
+
+Bütün nöqtələrin ortası silhouette balıdır. Ən yüksək bal yaxşı $k$-ya işarə edir. Daha ətraflı təhlil üçün *silhouette diaqramı* çəkilir: hər klasterin əmsalları ayrıca göstərilir.
+
+</Section>
+
+<Section id="simulation">
+
+Eyni beş qrupluq məlumatda $k = 1 \ldots 10$ üçün k-means brauzerdə işlədilir. Hər $k$ üçün üç k-means++ başlanğıcının ən yaxşısı götürülür.
+
+<Demo id="kmeans-elbow" />
+
+Inertia qrafikində dirsək $k = 5$ ətrafındadır. Silhouette balı isə $k = 5$-də aydın maksimuma çatır. $k = 4$-də iki yaxın qrup birləşir, $k = 6$-da isə bir qrup süni şəkildə bölünür.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch08.code.choosing-k" />
+
+| k | 2 | 3 | 4 | **5** | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|
+| Inertia | 4 271 | 2 379 | 1 470 | **547** | 484 | 450 | 407 |
+| Silhouette | 0.529 | 0.593 | 0.574 | **0.711** | 0.641 | 0.554 | 0.487 |
+
+$k = 4$-dən $k = 5$-ə keçdikdə inertia ~2.7 dəfə düşür. Sonrakı addımlarda isə cəmi 10–15% azalır. Bu, klassik dirsəkdir. Silhouette də həqiqi qrup sayını, 5-i, seçir.
+
+</Section>
+
+<Section id="summary">
+
+- Inertia $k$ ilə **həmişə azalır**, ona görə ən kiçik inertia meyar deyil.
+- **Dirsək üsulu:** inertia azalmasının kəskin yavaşladığı $k$. Kobud, lakin sürətlidir.
+- **Silhouette balı** $(b - a)/\max(a, b)$: ən yüksək orta bal yaxşı $k$-ya işarə edir.
+- Bizim məlumatda hər iki üsul həqiqi qrup sayını tapdı: $k = 5$.
+
+</Section>

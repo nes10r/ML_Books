@@ -1,0 +1,85 @@
+<Section id="definition">
+
+Telefonunuz üzünüzü tanıyır, poçt qutunuz spam məktubları ayırır, xəritə tətbiqi tıxacı proqnozlaşdırır. Bu sistemlərin heç birində proqramçı “üz belə görünür” və ya “spam məktub bu sözlərdən ibarətdir” deyə bütün qaydaları əl ilə yazmayıb. Onlar **nümunələrdən öyrəniblər**.
+
+<Term id="machine-learning" full /> kompüterə tapşırığı yerinə yetirməyi addım-addım izah etmək əvəzinə, ona çoxlu nümunə göstərib qanunauyğunluğu özünün tapmasına imkan verən yanaşmadır.
+
+Daha dəqiq, mühəndis tərifi üç komponentdən ibarətdir:
+
+- **Tapşırıq (T):** sistemin etməli olduğu iş — məsələn, məktubu “spam” və ya “spam deyil” kimi qiymətləndirmək.
+- **Təcrübə (E):** sistemin öyrəndiyi məlumat — əvvəllər istifadəçilərin işarələdiyi minlərlə məktub.
+- **Performans ölçüsü (P):** nə qədər yaxşı işlədiyini göstərən rəqəm — məsələn, düzgün təsnif edilmiş məktubların payı.
+
+Proqram **E** təcrübəsi artdıqca **T** tapşırığında **P** ilə ölçülən nəticəsini yaxşılaşdırırsa, deyirik ki, o, öyrənir.
+
+<Callout variant="insight">
+Sistemin öyrəndiyi nümunələr toplusu <Term id="training-set" full /> adlanır. Öyrənmə nəticəsində yaranan və proqnoz verən hissə isə <Term id="model" />dir.
+</Callout>
+
+</Section>
+
+<Section id="traditional-vs-ml">
+
+Fərqi aydın görmək üçün eyni problemə iki yanaşmanı müqayisə edək.
+
+<Media id="ch01.media.traditional-vs-ml" />
+
+**Ənənəvi proqramlaşdırmada:**
+
+1. Problemi öyrənirik və qaydaları özümüz müəyyən edirik.
+2. Bu qaydaları kod kimi yazırıq (`if ... else ...`).
+3. Proqramı sınayırıq, səhv tapdıqda yeni qaydalar əlavə edirik.
+4. Qaydalar siyahısı uzandıqca proqramı saxlamaq çətinləşir.
+
+**Maşın öyrənməsində:**
+
+1. Nümunələr toplayırıq: girişlər və onlara uyğun düzgün cavablar.
+2. Öyrənmə alqoritmi seçirik.
+3. Alqoritm nümunələrdən qaydaları (modeli) avtomatik çıxarır.
+4. Modeli yeni məlumatda qiymətləndiririk. Lazım gəldikdə daha çox məlumatla yenidən öyrədirik.
+
+| | Ənənəvi proqram | Maşın öyrənməsi |
+|---|---|---|
+| Giriş | Məlumat + qaydalar | Məlumat + cavablar |
+| Çıxış | Cavablar | Qaydalar (model) |
+| Dəyişikliyə uyğunlaşma | Kodu əl ilə yeniləmək | Yeni məlumatla yenidən öyrətmək |
+
+</Section>
+
+<Section id="spam-filter">
+
+Tutaq ki, spam filtri yazırsınız. Ənənəvi yanaşmada belə qaydalar yaradardınız: “mövzuda *pulsuz* sözü varsa”, “*təcili* və *kart* sözləri birlikdədirsə”, “göndərən naməlum domendəndirsə” və s.
+
+Problem ondadır ki, spam göndərənlər tez uyğunlaşır. *Pulsuz* əvəzinə *pu1suz* yazırlar, şəkillərdən istifadə edirlər. Hər dəfə yeni qayda yazmalı olursunuz və onların sayı yüzlərlə olur.
+
+ML yanaşmasında isə istifadəçilərin “spam” düyməsi ilə işarələdiyi məktublar təlim məlumatına çevrilir. Model hansı söz və əlamət birləşmələrinin spama işarə etdiyini özü tapır. Yeni taktika yayıldıqda istifadəçilər həmin məktubları işarələyir və model yenidən öyrədildikdə onu da tanımağa başlayır. Bunun üçün kodu dəyişməyə ehtiyac yoxdur.
+
+<Callout variant="tip" title="Əlavə fayda">
+Öyrədilmiş modeli araşdıraraq insan üçün maraqlı nəticələr çıxarmaq olar — məsələn, spamın ən güclü göstəricilərini görmək. Böyük məlumatlarda gizli qanunauyğunluqları belə üzə çıxarmaq <Term id="data-mining" full /> adlanır.
+</Callout>
+
+</Section>
+
+<Section id="why-ml">
+
+Maşın öyrənməsi xüsusilə aşağıdakı hallarda üstündür:
+
+- **Qaydaları çox və mürəkkəb olan problemlər.** Uzun qayda siyahısı əvəzinə bir model daha sadə və dəqiq ola bilər.
+- **Ənənəvi alqoritmi məlum olmayan problemlər.** Nitqin tanınması, şəkildəki obyektlər. Səs dalğasından sözə keçidin “düsturunu” əl ilə yazmaq demək olar ki, mümkün deyil.
+- **Daim dəyişən mühitlər.** Model yeni məlumatla yenidən öyrədilərək uyğunlaşır.
+- **İnsan üçün anlayış əldə etmək.** Böyük məlumat həcmlərində qanunauyğunluqları kəşf etmək.
+
+<Callout variant="warning" title="ML sehrli çubuq deyil">
+Dəqiq və sadə həlli olan problemlər (məsələn, vergi məbləğini qanunla müəyyən edilmiş düsturla hesablamaq) üçün ML lazımsız mürəkkəblik və risk gətirir. Əvvəlcə sual verin: “Bu problemi bir neçə aydın qayda ilə həll etmək olarmı?”
+</Callout>
+
+</Section>
+
+<Section id="summary">
+
+- Maşın öyrənməsi — kompüterin açıq proqramlaşdırılmadan **məlumatdan öyrənməsidir**.
+- Tərifin üç komponenti var: **tapşırıq, təcrübə, performans ölçüsü**.
+- Ənənəvi proqramda qaydaları biz yazırıq. ML-də qaydalar **nümunələrdən çıxarılır**.
+- ML mürəkkəb, alqoritmi məlum olmayan və dəyişkən problemlərdə ən böyük üstünlüyü verir.
+
+</Section>

@@ -1,0 +1,87 @@
+<Section id="clean-predictions">
+
+Dəqiqlik bütün səhvləri eyni qaba atır. Halbuki iki fərqli səhv növü var: 5-i “5 deyil” saymaq və digər rəqəmi “5” saymaq. Onları ayrıca saymaq üçün əvvəlcə hər təlim şəkli üçün **etibarlı proqnoz** lazımdır.
+
+Modeli bütün təlim dəstində öyrədib eyni dəstdə proqnoz versək, nəticə optimist olar: model həmin şəkilləri artıq görüb. Test dəstinə isə hələ toxunmuruq. Həll `cross_val_predict()` funksiyasıdır:
+
+1. Təlim dəstini 3 qata bölür.
+2. Hər qat üçün modeli qalan 2 qatda öyrədir.
+3. Həmin qatdakı şəkillər üçün proqnoz verir.
+
+Nəticədə **hər şəkil üçün onu görməmiş modelin proqnozu** alınır:
+
+```python
+y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)
+```
+
+</Section>
+
+<Section id="matrix">
+
+<Term id="confusion-matrix" full /> hər həqiqi sinfin nümunələrinin hansı siniflərə proqnozlaşdırıldığını sayır. Sətirlər **həqiqi** sinif, sütunlar isə **proqnoz** sinfidir:
+
+<Media id="ch03.media.confusion-matrix" />
+
+Dörd xananın adları var:
+
+| | Proqnoz: 5 deyil | Proqnoz: 5 |
+|---|---|---|
+| **Həqiqi: 5 deyil** | **TN** = 1288 (düzgün mənfi) | **FP** = 4 (yanlış həyəcan) |
+| **Həqiqi: 5** | **FN** = 17 (buraxılmış 5) | **TP** = 128 (düzgün müsbət) |
+
+Mükəmməl təsnifatçının matrisində yalnız diaqonal (TN və TP) dolu olardı. Bizim modelin iki zəif yeri görünür: 17 ədəd 5-i “görməyib”, 4 başqa rəqəmi isə 5 sayıb.
+
+</Section>
+
+<Section id="precision-recall">
+
+Matrisdən iki əsas metrika qurulur.
+
+<Term id="precision" full /> sualı belədir: **model “5” deyəndə nə qədər haqlıdır?** Bu, proqnoz “5” sütununa baxır:
+
+$$
+\text{precision} = \frac{TP}{TP + FP} = \frac{128}{128 + 4} \approx 0.970
+$$
+
+Precision təkbaşına aldadıcı ola bilər. Model yalnız bir şəkil üçün, ən əmin olduğu üçün “5” desə, precision 100% olar. Ona görə onu həmişə ikinci metrika ilə birlikdə izləyirlər.
+
+<Term id="recall" full /> sualı isə belədir: **bütün 5-lərin neçə faizini tapdıq?** Bu, həqiqi “5” sətrinə baxır. Bu metrikaya *həssaslıq* (sensitivity) və ya *düzgün müsbət nisbəti* (TPR) də deyilir:
+
+$$
+\text{recall} = \frac{TP}{TP + FN} = \frac{128}{128 + 17} \approx 0.883
+$$
+
+İndi model fərqli görünür. O, “5” deyəndə 97% haqlıdır, lakin bütün 5-lərin cəmi 88%-ni tutur.
+
+</Section>
+
+<Section id="f1">
+
+İki modeli müqayisə etmək üçün tək rəqəm rahatdır. <Term id="f1-score" full /> precision və recall-un **harmonik ortasıdır**:
+
+$$
+F_1 = \frac{2}{\dfrac{1}{\text{precision}} + \dfrac{1}{\text{recall}}} = 2 \cdot \frac{\text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}} \approx 0.924
+$$
+
+Harmonik orta kiçik qiymətə daha çox çəki verir. Precision 1.0, recall isə 0.05 olsa, adi orta 0.525 verərdi. F1 isə cəmi ≈ 0.095 verir. Yəni F1 yalnız **hər ikisi** yüksək olduqda yüksək olur.
+
+<Callout variant="info" title="F1 hər zaman ən yaxşı seçim deyil">
+F1 precision və recall-a bərabər əhəmiyyət verir. Real tapşırıqda çox vaxt biri daha vacibdir. Uşaq videoları filtrində “təhlükəsiz” proqnozunun precision-u vacibdir. Oğru aşkarlayan kamerada isə recall vacibdir: bəzi yanlış həyəcanlar olsa da, oğruların çoxu tutulmalıdır. Növbəti dərs bu seçimin necə edildiyini göstərir.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch03.code.confusion" />
+
+</Section>
+
+<Section id="summary">
+
+- `cross_val_predict` hər təlim nümunəsi üçün **təmiz** proqnoz verir.
+- **Qarışıqlıq matrisi:** sətir = həqiqət, sütun = proqnoz. Xanalar: TN, FP, FN, TP.
+- **Precision** = TP/(TP+FP) ≈ 0.97, **recall** = TP/(TP+FN) ≈ 0.88.
+- **F1** harmonik ortadır (≈ 0.92). Yalnız hər iki metrika yüksək olduqda yüksəkdir.
+
+</Section>

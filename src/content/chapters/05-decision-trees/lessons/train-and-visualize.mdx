@@ -1,0 +1,96 @@
+<Section id="first-tree">
+
+<Term id="decision-tree" full /> uşaqların “20 sual” oyununa bənzəyir: hər addımda bir “bəli/xeyr” sualı verilir və cavaba görə növbəti suala keçilir. Model bu sualları məlumatdan **özü** öyrənir.
+
+Qərar ağacları çox yönlüdür:
+
+- həm təsnifat, həm də reqressiya tapşırıqlarını həll edir;
+- mürəkkəb, qeyri-xətti əlaqələri tuta bilir;
+- demək olar ki, **ön emal tələb etmir**: miqyaslama və ya mərkəzləşdirmə lazım deyil;
+- Fəsil 6-da öyrənəcəyimiz təsadüfi meşələrin və bustinqin “kərpicidir”.
+
+Fəsil üçün sintetik məlumat hazırlamışıq: üç meyvə növü (naringi, alma, nar) və iki əlamət, **diametr** (sm) və **çəki** (q). Növlər qismən üst-üstə düşür, məsələn böyük naringi kiçik almaya bənzəyir. İlk ağacı dərinliyi 2 ilə məhdudlaşdırırıq ki, onu rahat oxuya bilək:
+
+```python
+tree = DecisionTreeClassifier(max_depth=2, random_state=42)
+tree.fit(X_train, y_train)
+print(export_text(tree, feature_names=["diametr", "çəki"], class_names=FRUITS))
+```
+
+</Section>
+
+<Section id="anatomy">
+
+Öyrədilmiş ağac belə görünür:
+
+<Media id="ch05.media.tree-anatomy" />
+
+Gəlin onu yuxarıdan aşağı oxuyaq:
+
+1. **<Term id="root-node" full />.** Bütün 135 təlim nümunəsi buradan başlayır, hər növdən 45. Sual: “çəki ≤ 85.8 q?”
+2. **Bəli → sol qol** (47 nümunə). Bunların demək olar ki, hamısı naringidir: [44, 3, 0]. Burada daha bir sual var: “çəki ≤ 73.85?”
+3. **Xeyr → sağ qol** (88 nümunə): alma və nar qarışıqdır, [1, 42, 45]. Sual: “çəki ≤ 189.15?”
+4. **<Term id="leaf-node" full />lər** son düyünlərdir. Onların uşağı yoxdur və proqnoz burada verilir.
+
+Hər düyündə üç atribut var:
+
+- **samples**: düyünə neçə təlim nümunəsi çatıb;
+- **value**: onların siniflər üzrə sayı;
+- **gini**: düyünün nə qədər “qarışıq” olduğu. Bunu növbəti dərsdə ətraflı öyrənəcəyik. Bütün nümunələr eyni sinifdəndirsə, gini 0 olur.
+
+<Callout variant="insight">
+Diqqət edin: bu dərinlik-2 ağac **yalnız çəkidən** istifadə edir. Model diametrə “baxmadan” 93% test dəqiqliyinə çatır. Belə şərh imkanı qərar ağaclarını <Term id="white-box-model" full /> edir: hər qərarı sadə suallarla izah etmək olar. Neyron şəbəkələr və təsadüfi meşələr isə adətən “qara qutu”dur.
+</Callout>
+
+</Section>
+
+<Section id="predict">
+
+Yeni meyvəni təsnif etmək üçün kökdən başlayıb suallara cavab verərək yarpağa çatırıq. Məsələn, **7 sm, 120 q**:
+
+1. 120 ≤ 85.8? **Xeyr** → sağa.
+2. 120 ≤ 189.15? **Bəli** → sola.
+3. Yarpaq: [1, 37, 4] → proqnoz **alma**.
+
+Ağac **sinif ehtimallarını** da verir. Ehtimal yarpaqdakı təlim nümunələri arasında hər sinfin payıdır:
+
+$$
+\hat{p}_k = \frac{\text{n}_k}{\text{n}} = \left(\frac{1}{42}, \frac{37}{42}, \frac{4}{42}\right) \approx (0.024,\ 0.881,\ 0.095)
+$$
+
+Bunun bir nəticəsi var: **eyni yarpağa düşən bütün nöqtələr eyni ehtimalı alır**. 7 sm, 120 q olan meyvə də, 6 sm, 180 q olan meyvə də. Ağac yarpaq daxilində “nüansları” görmür.
+
+</Section>
+
+<Section id="simulation">
+
+İndi ağacı özünüz qurun. Qrafikin istənilən yerinə klikləyin: həmin nöqtənin kökdən yarpağa qədər yolu ağac diaqramında işıqlanacaq.
+
+<Demo id="tree-builder" />
+
+Dərinliyi tədricən artırın. Bölgələr düzbucaqlı “kərpiclərə” bölünür və bütün sərhədlər oxlara paraleldir. Dərinlik böyüdükcə xırda bölgələr yaranır: ağac ayrı-ayrı nöqtələri “əzbərləyir”. Requlyarlaşdırma dərsində buna qayıdacağıq.
+
+</Section>
+
+<Section id="python">
+
+Fəslin skriptləri ortaq məlumat modulunu idxal edir. Əvvəlcə onu yükləyin:
+
+<PythonExample id="ch05.code.fruits" />
+
+Ağacın təlimi, mətn vizuallaşdırması və proqnoz:
+
+<PythonExample id="ch05.code.train" />
+
+`show_weights=True` hər yarpaqdakı siniflərin sayını göstərir. `apply()` nümunənin hansı yarpağa düşdüyünü qaytarır. Bu, ağacın seqmentləri ilə işləmək üçün faydalıdır. Qrafik vizuallaşdırma istəsəniz, `sklearn.tree.plot_tree(tree)` matplotlib ilə ağac diaqramı çəkir.
+
+</Section>
+
+<Section id="summary">
+
+- Qərar ağacı bir-birinin ardınca verilən **“bəli/xeyr” sualları** ilə proqnoz verir.
+- **Kök → daxili düyünlər → yarpaqlar.** Hər düyündə samples, value və gini atributları var.
+- Proqnoz yarpaqda verilir. **Ehtimal yarpaqdakı sinif paylarıdır** və yarpaq daxilində sabitdir.
+- Ağaclar **miqyaslama tələb etmir** və asan şərh olunur (“ağ qutu”).
+
+</Section>

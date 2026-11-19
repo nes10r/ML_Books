@@ -1,0 +1,124 @@
+<Section id="grid-search">
+
+Qısa siyahıda perspektivli model var: təsadüfi meşə. İndi onun hiperparametrlərini tənzimləmək lazımdır. Bunu əl ilə etmək yorucudur. <Term id="grid-search" full /> bu işi avtomatlaşdırır: siz yoxlanılacaq qiymətləri verirsiniz, `GridSearchCV` isə **bütün kombinasiyaları** çarpaz validasiya ilə qiymətləndirir:
+
+```python
+param_grid = {
+    "model__max_features": [2, 4, 8],
+    "model__min_samples_leaf": [1, 3, 10],
+}
+grid = GridSearchCV(pipe, param_grid, cv=3, scoring="neg_root_mean_squared_error")
+grid.fit(X_train, y_train)
+```
+
+Burada 3 × 3 = 9 kombinasiya var və hər biri 3 qatda yoxlanılır. Cəmi 27 təlim aparılır.
+
+Pipeline addımının hiperparametrinə `addım__parametr` formatı ilə müraciət olunur. **İki alt xətt** iç-içə adları ayırır. Hazırlıq addımlarının hiperparametrlərini də axtarmaq olar: məsələn, `prep__say__simpleimputer__strategy` imputer-in median və ya orta ilə doldurmasını seçir. Hazırlığın özü də model seçiminin bir hissəsinə çevrilir.
+
+</Section>
+
+<Section id="simulation">
+
+Şəbəkə axtarışının necə işlədiyini gözlə görmək üçün simulyasiya brauzerdə real hesablama aparır. k-NN modelinin iki hiperparametri axtarılır: **qonşu sayı** (8 qiymət) və **miqyaslama üsulu** (3 qiymət). Hər kombinasiya 5 qatlı çarpaz validasiya ilə yoxlanılır.
+
+<Demo id="grid-search" />
+
+Nəticə ibrətamizdir. Miqyaslama olmadan ən yaxşı k-NN-in xətası ~62 000 AZN-dir. Standartlaşdırma ilə isə ~40 600 AZN-ə enir. Hiperparametr axtarışı yalnız “ədədləri tənzimləmək” deyil. O, burada **hazırlıq qərarının** (miqyaslamanın) nə qədər vacib olduğunu da üzə çıxardı.
+
+</Section>
+
+<Section id="randomized">
+
+Kombinasiyaların sayı sürətlə artır: 5 hiperparametr, hərəsinin 10 qiyməti varsa, 100 000 kombinasiya alınır. <Term id="randomized-search" full /> (`RandomizedSearchCV`) fəzanın hər nöqtəsini yoxlamır. O, verilmiş sayda (`n_iter`) təsadüfi kombinasiya seçir:
+
+```python
+from scipy.stats import randint
+
+param_distribs = {
+    "model__max_features": randint(2, 16),
+    "model__min_samples_leaf": randint(1, 12),
+}
+rnd = RandomizedSearchCV(pipe, param_distribs, n_iter=9, cv=3, random_state=42, ...)
+```
+
+Üstünlükləri bunlardır:
+
+- **Büdcə sabitdir.** `n_iter` qədər kombinasiya yoxlanılır, fəza nə qədər böyük olsa da.
+- **Kəsilməz fəza.** Grid-də yalnız sizin seçdiyiniz qiymətlər yoxlanılır. Təsadüfi axtarış isə fərqli, gözlənilməz qiymətləri də sınayır.
+- **Əhəmiyyətsiz hiperparametrlər** büdcəni “yemir”. Grid-də onların hər qiyməti bütün digərləri ilə birlikdə təkrarlanır.
+
+Bizim kiçik nümunədə hər iki axtarış oxşar nəticə verdi: grid ən yaxşı kombinasiyanı `max_features=8, min_samples_leaf=3` kimi tapdı (CV RMSE ~31 700). Təsadüfi axtarış eyni büdcə ilə `max_features=9, min_samples_leaf=3` tapdı (~32 200). Fəza kiçik olduqda grid kifayətdir, böyük olduqda təsadüfi axtarış daha səmərəlidir.
+
+<Callout variant="tip">
+Scikit-Learn-də `HalvingGridSearchCV` və `HalvingRandomSearchCV` də var. Onlar əvvəlcə çoxlu kombinasiyanı az resursla (az nümunə ilə) yoxlayır, sonra yalnız ən yaxşılarını tam resursla qiymətləndirir. Böyük məlumatda vaxta çox qənaət edir.
+</Callout>
+
+</Section>
+
+<Section id="ensembles">
+
+Modeli təkmilləşdirməyin başqa yolu ən yaxşı modelləri **birləşdirməkdir**. Fərqli növ səhvlər edən modellərin ortalaması çox vaxt ən yaxşı tək modeldən yaxşı olur, eynilə təsadüfi meşənin tək ağacdan yaxşı olması kimi. Məsələn, xətti reqressiya ilə təsadüfi meşənin proqnozlarını ortalamaq olar. Scikit-Learn-də `VotingRegressor` və `StackingRegressor` bunun üçündür (Fəsil 6).
+
+</Section>
+
+<Section id="analyze">
+
+Ən yaxşı modeli “qara qutu” kimi qəbul etməyin. Onu təhlil edin. Təsadüfi meşə hər əlamətin nisbi vacibliyini göstərir (<Term id="feature-importance" full />):
+
+| Əlamət | Əhəmiyyət |
+|---|---|
+| `sahe` | 0.372 |
+| `enlik` | 0.172 |
+| `uzunluq` | 0.118 |
+| `otaq_sayi` | 0.102 |
+| `metro_mesafe` | 0.071 |
+| `rayon_Səbail` | 0.036 |
+
+Bu cədvəldən nə öyrənirik?
+
+1. **Sahə ən vacib əlamətdir.** Yazı səhvlərini düzəltməyə sərf etdiyimiz vaxt əbəs deyildi.
+2. **Coğrafiya** (enlik + uzunluq ≈ 0.29) kəşf mərhələsindəki xəritə müşahidəsini təsdiqləyir.
+3. Rayonların one-hot sütunları ayrı-ayrılıqda kiçik görünür, çünki eyni informasiyanı koordinatlar da daşıyır.
+4. Çəkisi çox kiçik olan əlamətləri (məsələn, bəzi rayon sütunlarını) atmağı sınamaq olar. Scikit-Learn-in `SelectFromModel` sinfi bunu pipeline daxilində edir.
+
+**Səhvlərin təhlili** də eyni dərəcədə vacibdir. Ən böyük xətaya malik mənzillərə baxın. Onlarda ortaq nə var? Çox böyük mənzillər? Kupçasız evlər? Bu, yeni əlamət, əlavə təmizləmə və ya xüsusi qayda ideyası verir.
+
+</Section>
+
+<Section id="test-evaluation">
+
+Nəhayət, kilidli test dəstini açırıq. Seçilmiş model test dəstində **bir dəfə** qiymətləndirilir. Diqqət: test məlumatına `fit` yox, yalnız `predict` tətbiq olunur.
+
+Tək rəqəm (bizdə **test RMSE ≈ 29 275 AZN**) kifayət deyil, çünki test dəsti cəmi 480 mənzildir. Başqa 480 mənzil fərqli rəqəm verərdi. Ona görə də <Term id="confidence-interval" full /> hesablayırıq. Kvadrat xətaların ortası üçün Student t-paylanmasına əsaslanan 95% interval belədir:
+
+$$
+\overline{e^2} \pm t_{0.975,\,m-1}\cdot\frac{s_{e^2}}{\sqrt{m}}
+$$
+
+Burada $\overline{e^2}$ kvadrat xətaların ortası, $s_{e^2}$ onların standart kənarlaşması, $m$ isə test nümunələrinin sayıdır. Hər iki sərhədin kvadrat kökünü alaraq RMSE intervalını alırıq: **24 759 – 33 181 AZN**.
+
+<Callout variant="warning" title="Testdən sonra tənzimləməyin">
+Test nəticəsi çarpaz validasiyadan bir qədər fərqli ola bilər. Bu, normaldır. Nəticəni “yaxşılaşdırmaq” üçün hiperparametrləri test dəstinə görə dəyişməyin. Əks halda test dəsti də təlimin bir hissəsinə çevrilir və yeni məlumatdakı performans haqqında heç nə demir.
+</Callout>
+
+Bizim nəticəni ilkin hədəflə müqayisə edək: tipik xəta ~29 000 AZN median qiymətin (144 000) təxminən 20%-i qədərdir. Bu, əl ilə qiymətləndirmə ilə **təxminən eyni səviyyədir**. Lakin model saniyələr içində işləyir və qiymətləndiricilərin vaxtını qənaət edir. İstifadəyə vermək qərarı da məhz bu müzakirəyə əsaslanmalıdır.
+
+</Section>
+
+<Section id="python">
+
+Şəbəkə axtarışı, təsadüfi axtarış, əlamət əhəmiyyəti və etibarlılıq intervalı ilə yekun test. Skript ~1 dəqiqə işləyə bilər.
+
+<PythonExample id="ch02.code.fine-tune" />
+
+</Section>
+
+<Section id="summary">
+
+- **GridSearchCV:** bütün kombinasiyalar. Kiçik fəza üçün uyğundur. **RandomizedSearchCV:** sabit büdcə, böyük fəza üçün uyğundur.
+- Pipeline hiperparametrləri `addım__parametr` formatı ilə verilir. **Hazırlıq da tənzimlənə bilər.**
+- **Ansambllar** fərqli modellərin səhvlərini kompensasiya edir.
+- Ən yaxşı modeli **əlamət əhəmiyyəti** və **səhvlərin təhlili** ilə araşdırın.
+- Test dəstində **bir dəfə** qiymətləndirin və **etibarlılıq intervalı** ilə hesabat verin.
+
+</Section>

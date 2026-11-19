@@ -1,0 +1,77 @@
+<Section id="idea">
+
+<Term id="dbscan" full /> klasterləri mərkəzlər ətrafında deyil, **sıx bölgələrin davamlı zonaları** kimi təyin edir. Adı *Density-Based Spatial Clustering of Applications with Noise* sözlərindəndir. İki hiperparametri var: radius $\varepsilon$ və `min_samples`.
+
+1. Hər nöqtə üçün onun $\varepsilon$ radiuslu qonşuluğundakı nöqtələr sayılır. Nöqtənin özü də daxildir.
+2. Qonşuluğunda ən azı `min_samples` nöqtə varsa, bu nöqtə <Term id="core-instance" full />dir, yəni sıx bölgənin içindədir.
+3. Bir-birinin qonşuluğunda olan bütün əsas nöqtələr **eyni klasterə** aiddir. Zəncir uzana bilər, ona görə klaster istənilən formada ola bilər.
+4. Əsas nöqtənin qonşuluğunda olan, lakin özü əsas olmayan nöqtələr **sərhəd** nöqtələridir. Onlar həmin klasterə qoşulur.
+5. Heç bir əsas nöqtənin qonşuluğunda olmayan nöqtələr **küydür** (anomaliyadır). Onların etiketi −1 olur.
+
+DBSCAN-ın üstünlükləri bunlardır:
+
+- klaster sayını **özü** müəyyən edir;
+- istənilən formalı klasterləri tapır;
+- küyə və kənar qiymətlərə dözümlüdür.
+
+</Section>
+
+<Section id="simulation">
+
+İç-içə keçmiş iki “ay” k-means üçün klassik çətin haldır. DBSCAN-ın hiperparametrlərini dəyişin və k-means ilə müqayisə edin.
+
+<Demo id="dbscan" />
+
+- **Kiçik ε:** sıx bölgələr bir-birindən qopur. Çoxlu kiçik klaster yaranır və nöqtələrin xeyli hissəsi küy sayılır.
+- **Uyğun ε:** iki ay mükəmməl ayrılır.
+- **Böyük ε:** aylar bir-birinə “toxunur” və bir klasterə birləşir.
+- **k-means (k = 2)** ayları düz xətt boyunca kəsir, çünki hər klasteri dəyirmi qrup kimi təsəvvür edir.
+
+</Section>
+
+<Section id="predict">
+
+Scikit-Learn-in `DBSCAN` sinfinin `predict()` metodu yoxdur, yalnız `fit_predict()` var. Yeni nöqtələri təsnif etmək üçün iki addımlıq yanaşma istifadə olunur:
+
+1. **Əsas nöqtələr** (`db.components_`) və onların etiketləri üzərində təsnifatçı öyrədilir, məsələn `KNeighborsClassifier`.
+2. Yeni nöqtə üçün ən yaxın əsas nöqtəyə məsafə yoxlanılır. Məsafə $\varepsilon$-dan böyükdürsə, nöqtə anomaliya kimi işarələnir (−1). Əks halda təsnifatçının proqnozu götürülür.
+
+Bu, gözəl bir prinsipi göstərir: **klasterləşdirmə və təsnifat birlikdə** işləyə bilər. Hansı təsnifatçının seçildiyi isə tapşırıqdan asılıdır.
+
+</Section>
+
+<Section id="others">
+
+Scikit-Learn-də bir neçə digər klasterləşdirmə alqoritmi də var:
+
+| Alqoritm | İdeya | Güclü tərəfi |
+|---|---|---|
+| **HDBSCAN** | DBSCAN-ın iyerarxik versiyası | Fərqli sıxlıqlı klasterlər; ε seçmək lazım deyil |
+| **Aqlomerativ klasterləşdirmə** | Ən yaxın klaster cütlərini ardıcıl birləşdirir | Klasterlərin iyerarxiyası (dendroqram); istənilən məsafə |
+| **BIRCH** | Məlumatı ağac strukturunda sıxlaşdırır | Çox böyük məlumat, az əlamət |
+| **Mean-Shift** | Nöqtələri sıxlığın zirvəsinə doğru sürüşdürür | Klaster sayını özü tapır |
+| **Affinity Propagation** | Nöqtələr “nümayəndə” seçmək üçün mesaj mübadiləsi edir | Klaster sayını özü tapır, kiçik məlumat |
+| **Spectral Clustering** | Oxşarlıq qrafının spektral təsviri + k-means | Mürəkkəb formalar, kiçik məlumat |
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch08.code.dbscan" />
+
+- **ε = 0.05:** 15 klaster və 124 küy nöqtəsi var. ARI cəmi 0.210-dur. ARI (adjusted Rand index) həqiqi etiketlərlə uyğunluğu ölçür: 1 mükəmməl, 0 təsadüfi deməkdir.
+- **ε = 0.2:** iki klaster, küy yoxdur və **ARI = 1.000**, yəni aylar mükəmməl ayrılıb.
+- **k-means:** ARI = 0.239.
+
+Yeni nöqtələrdən ikisi (−0.5, 0) və (2, 1) əsas nöqtələrdən uzaqdır və anomaliya kimi işarələnir.
+
+</Section>
+
+<Section id="summary">
+
+- **DBSCAN** klasterləri sıx bölgələr kimi təyin edir. Əsas, sərhəd və küy nöqtələrini ayırır.
+- Klaster sayını özü tapır, **istənilən formalı** klasterləri ayırır və küyə dözümlüdür.
+- **ε** və **min_samples** seçimi vacibdir. Fərqli sıxlıqlı klasterlər üçün **HDBSCAN** daha yaxşıdır.
+- Yeni nöqtələr üçün əsas nöqtələr üzərində **KNN təsnifatçısı** öyrədilir.
+
+</Section>

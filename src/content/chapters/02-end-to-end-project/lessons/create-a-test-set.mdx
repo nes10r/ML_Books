@@ -1,0 +1,89 @@
+<Section id="why-now">
+
+Məlumata cəmi bir neçə dəqiqə baxmışıq. Ağlabatan addım daha dərindən araşdırmaq kimi görünür. **Xeyr: əvvəlcə test dəstini ayırıb kənara qoyuruq.**
+
+Səbəb psixolojidir. Beynimiz qanunauyğunluq tapmaqda çox güclüdür və həddindən artıq uyğunlaşmağa (overfitting) meyillidir. Test məlumatına baxsaq, orada gördüyümüz təsadüfi bir detal model seçimimizə təsir edəcək. Nəticədə test xətası həddindən artıq optimist çıxacaq və model istifadəyə veriləndə gözləniləndən pis işləyəcək. Bu hal <Term id="data-snooping-bias" full /> adlanır.
+
+</Section>
+
+<Section id="random-split">
+
+Ən sadə yol nümunələrin təsadüfi 20%-ni seçməkdir. Scikit-Learn-də bu, bir sətirlik işdir:
+
+```python
+from sklearn.model_selection import train_test_split
+
+train_set, test_set = train_test_split(apartments, test_size=0.2, random_state=42)
+```
+
+Burada iki tələ var:
+
+1. **`random_state` olmadan** hər işə salmada fərqli test dəsti alınır. Zaman keçdikcə bütün məlumatı “görmüş” olursunuz. `random_state` (seed) təkrarlanmanı təmin edir.
+2. **Məlumat yeniləndikdə** (sətir əlavə edildikdə) eyni seed tamamilə fərqli bölgü yaradır. Köhnə test nümunələrinin bir hissəsi təlimə keçir.
+
+</Section>
+
+<Section id="stable-split">
+
+İkinci problemin həlli belədir: nümunənin test dəstinə düşüb-düşməməsini onun **dəyişməz ID-si** ilə müəyyən edək. Məsələn, ID-nin hash qiymətini hesablayırıq və o, mümkün maksimumun 20%-dən kiçikdirsə, nümunə test dəstinə düşür:
+
+```python
+from zlib import crc32
+import numpy as np
+
+def is_in_test(identifier, test_ratio):
+    return crc32(np.int64(identifier)) < test_ratio * 2**32
+```
+
+Yeni sətirlər əlavə olunduqda köhnələrin taleyi dəyişmir. Yeni nümunələrin təxminən 20%-i isə testə düşür.
+
+<Callout variant="warning" title="ID harada saxlanılır?">
+Sətir nömrəsi (indeks) ID kimi yaramır: məlumatın ortasından sətir silinsə və ya yeni sətir yalnız sonuna əlavə olunmasa, nömrələr sürüşür. Bizim dəstdə xüsusi `id` sütunu var. Belə sütun yoxdursa, sabit əlamətlərdən birləşmiş ID qurmaq olar, məsələn koordinatlardan.
+</Callout>
+
+</Section>
+
+<Section id="stratified">
+
+Təsadüfi seçmə böyük məlumatda yaxşı işləyir. Kiçik məlumatda isə əhəmiyyətli <Term id="sampling-bias" /> yarada bilər.
+
+Bir misal. Tutaq ki, şəhər əhalisinin 52%-i qadın, 48%-i kişidir. 1 000 nəfərlik sorğu keçirən təşkilatçı təsadüfi seçmə ilə kifayətlənmir, 520 qadın və 480 kişi seçir. Bu, <Term id="stratified-sampling" full />dır: populyasiya *stratlara* bölünür və hər stratdan onun payına uyğun sayda nümunə götürülür.
+
+Bizim məlumatda qiymət ən çox **rayondan** asılıdır. Səbaildə 1 m²-in median qiyməti Suraxanıdakından üç dəfə yüksəkdir. Ona görə də test dəstində hər rayonun payı ümumi məlumatdakı kimi olmalıdır. Əks halda test xətası hansı rayonların “şansla” testə düşməsindən asılı olar.
+
+<Callout variant="info">
+Stratlar çox kiçik olmamalıdır. Hər stratda kifayət qədər nümunə olmalıdır, əks halda onun payının qiymətləndirilməsi qeyri-dəqiq olur. Ədədi əlamətə görə stratifikasiya etmək lazım gələrsə (məsələn, sahəyə görə), əvvəlcə onu bir neçə intervala (kateqoriyaya) bölün.
+</Callout>
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada bütün 2 400 mənzil real vaxtda iki üsulla bölünür. Boz zolaq rayonun bütün məlumatdakı payıdır. Qırmızı zolaq təsadüfi test dəstindəki, göy zolaq isə stratifikasiyalı test dəstindəki payı göstərir.
+
+<Demo id="stratified-split" />
+
+Müşahidə edin: 20%-lik test dəstində 100 təsadüfi bölgü üzrə ən çox “sürüşən” rayonun payı orta hesabla təxminən 2.4 faiz bəndi fərqlənir. Stratifikasiyalı bölgüdə bu fərq təxminən 0.1 faiz bəndidir. Test payını kiçiltdikdə təsadüfi bölgünün xətası artır, çünki az nümunədə təsadüfi dalğalanma daha böyükdür.
+
+</Section>
+
+<Section id="python">
+
+Scikit-Learn-də stratifikasiya üçün `stratify` parametrini vermək kifayətdir. Aşağıdakı skript üç üsulu müqayisə edir:
+
+<PythonExample id="ch02.code.test-set" />
+
+Cədvəldə görünür ki, təsadüfi bölgüdə Sabunçunun payı 6.92%-dən 5.42%-ə düşüb (1.5 faiz bəndi xəta). Stratifikasiyalı bölgüdə isə ən böyük xəta 0.13 faiz bəndidir. Hash bölgüsü dəqiq 481 sətir (20.0%) seçib.
+
+Bu fəslin qalan hissəsində stratifikasiyalı bölgüdən istifadə edəcəyik: `train_test_split(..., stratify=apartments["rayon"], random_state=42)`. Test dəsti indi kilidlidir. Ona yalnız ən sonda qayıdacağıq.
+
+</Section>
+
+<Section id="summary">
+
+- Test dəstini **kəşfdən əvvəl** ayırın: məlumat güdmə qərəzindən qorunmaq üçün.
+- Təsadüfi bölgü üçün **`random_state`** verin. Məlumat yenilənirsə, **ID hash-i** ilə sabit bölgü qurun.
+- Vacib kateqoriyanın payları testdə də qorunsun deyə **stratifikasiya** edin.
+- Bu fəsildə: 1 920 təlim + 480 test mənzili, rayona görə stratifikasiya.
+
+</Section>

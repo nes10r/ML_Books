@@ -1,0 +1,84 @@
+<Section id="polynomial">
+
+Məlumat düz xəttə uyğun gəlmirsə, nə etməli? Maraqlıdır ki, qeyri-xətti əlaqəni də **xətti modellə** öyrənmək olar. Hər əlamətin qüvvətlərini yeni əlamət kimi əlavə edirik və genişlənmiş əlamətlər üzərində xətti model öyrədirik. Bu, <Term id="polynomial-regression" full />dır.
+
+Məsələn, həqiqi əlaqə $y = 2 - 1.2x + 0.5x^2 + \varepsilon$ olsun. Burada $\varepsilon$ təsadüfi küydür. `PolynomialFeatures(degree=2)` hər $x$ üçün $[x, x^2]$ əlamətlərini yaradır:
+
+```python
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_poly = poly.fit_transform(X)        # x = -2.486  →  [-2.486, 6.181]
+LinearRegression().fit(X_poly, y)     # ŷ = 1.94 − 1.12x + 0.54x²
+```
+
+Model həqiqi əmsallara ($2$, $-1.2$, $0.5$) çox yaxın nəticə tapır.
+
+Bir neçə əlamət olduqda `PolynomialFeatures` **çarpaz hasilləri** də əlavə edir: $a$, $b$ əlamətləri üçün dərəcə 2-də $a^2$, $ab$, $b^2$. Bu, əlamətlər arasındakı qarşılıqlı əlaqəni öyrənməyə imkan verir. Lakin əlamət sayı sürətlə artır: $n$ əlamət və $d$ dərəcə üçün $\binom{n+d}{d} - 1$ əlamət yaranır. 10 əlamət və dərəcə 3 olduqda bu, 285 əlamət deməkdir.
+
+</Section>
+
+<Section id="learning-curves">
+
+Bəs dərəcəni necə seçək? Dərəcə 1 əyrini tuta bilmir, dərəcə 30 isə hər nöqtədən keçir. Fəsil 2-də bunu çarpaz validasiya ilə yoxlayırdıq. Başqa güclü alət <Term id="learning-curve" full />dir: təlim və validasiya xətası **təlim dəstinin ölçüsünə** görə qrafikdə göstərilir.
+
+Əyrilərin forması diaqnozu bildirir:
+
+| Mənzərə | Diaqnoz | Nə kömək edər |
+|---|---|---|
+| Hər iki əyri **yüksək platoda**, bir-birinə yaxın | Underfitting | Daha mürəkkəb model, daha yaxşı əlamətlər. **Daha çox məlumat kömək etməz** |
+| Təlim xətası aşağı, əyrilər arasında **böyük boşluq** | Overfitting | Daha çox məlumat, requlyarlaşdırma, sadə model |
+| Hər iki əyri **küy səviyyəsinə yaxın** aşağı platoda | Yaxşı uyğunluq | Test dəstində yoxlayın |
+
+Təlim xətası nümunə sayı artdıqca adətən **artır**. Bu, qəribə görünə bilər, lakin məntiqlidir: 2 nöqtədən düz xətt mükəmməl keçir, 80 nöqtədən isə keçmir. Validasiya xətası isə model daha çox məlumat gördükcə **azalır**.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada eyni məlumat üçün istənilən dərəcəli polinom modelin öyrənmə əyrilərini görə bilərsiniz. Aşağıdakı qrafik isə seçilmiş $m$ ilə öyrədilmiş modeli göstərir.
+
+<Demo id="learning-curves" />
+
+- **Dərəcə 1:** hər iki əyri ~1.5 RMSE-də sabitləşir. Model düz xəttdir və əyriliyi tuta bilmir. 80 nümunə də, 8 000 nümunə də nəticəni dəyişməz.
+- **Dərəcə 2:** hər iki əyri küy səviyyəsinə (~0.8) enir. Bu, düzgün modeldir.
+- **Dərəcə 10:** az məlumatda validasiya xətası nəhəngdir, çünki model nöqtələr arasında “vəhşi” salınır. Məlumat artdıqca boşluq daralır, lakin 80 nümunədə hələ də böyükdür.
+
+</Section>
+
+<Section id="bias-variance">
+
+Bu müşahidələrin arxasında statistikanın klassik nəticəsi dayanır: <Term id="bias-variance-tradeoff" full />. Modelin ümumiləşdirmə xətası üç hissəyə ayrılır:
+
+$$
+\mathbb{E}\left[\left(y - \hat{f}(\mathbf{x})\right)^2\right] = \underbrace{\text{Bias}\big[\hat{f}(\mathbf{x})\big]^2}_{\text{(1)}} + \underbrace{\text{Var}\big[\hat{f}(\mathbf{x})\big]}_{\text{(2)}} + \underbrace{\sigma^2}_{\text{(3)}}
+$$
+
+1. **Sürüşmə (bias)** yanlış fərziyyələrdən irəli gəlir. Məsələn, əlaqəni xətti saymaq, halbuki o, kvadratikdir. Yüksək sürüşmə **underfitting** deməkdir.
+2. **Dispersiya (variance)** modelin təlim məlumatındakı kiçik dəyişikliklərə həddindən artıq həssaslığıdır. Çox sərbəstlik dərəcəsi olan model, məsələn dərəcə 10, belədir. Yüksək dispersiya **overfitting** deməkdir.
+3. **Aradan qaldırılmayan xəta** məlumatın özündəki küydür. Onu yalnız məlumatı təmizləməklə azaltmaq olar, məsələn sensorları düzəltməklə və ya səhvləri təmizləməklə.
+
+Mürəkkəblik artdıqca sürüşmə azalır, dispersiya isə artır. Hər ikisini eyni anda minimuma endirmək olmur. Buna görə “kompromis” deyirik.
+
+</Section>
+
+<Section id="python">
+
+Scikit-Learn-in `learning_curve` funksiyası öyrənmə əyrilərini çarpaz validasiya ilə hesablayır:
+
+<PythonExample id="ch04.code.polynomial" />
+
+Cədvəldə hər üç diaqnoz aydın görünür:
+
+- dərəcə 1-də hər iki xəta ~1.5-də qalır;
+- dərəcə 2-də hər ikisi ~0.75-ə enir;
+- dərəcə 10-da 10 nümunə ilə təlim xətası **0**, validasiya xətası isə **244**-dür. 96 nümunə ilə isə boşluq demək olar ki, bağlanır.
+
+</Section>
+
+<Section id="summary">
+
+- **Polinom reqressiya:** qüvvətlər yeni əlamət kimi əlavə olunur və xətti model öyrədilir. Əlamət sayı sürətlə artır.
+- **Öyrənmə əyriləri:** platoda bir-birinə yaxın əyrilər underfitting, aralarında boşluq isə overfitting deməkdir.
+- Underfitting zamanı **daha çox məlumat kömək etmir**. Overfitting zamanı isə kömək edir.
+- Xəta = **sürüşmə² + dispersiya + küy**. Mürəkkəblik artdıqca sürüşmə azalır, dispersiya artır.
+
+</Section>

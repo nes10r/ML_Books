@@ -1,0 +1,92 @@
+<Section id="stochastic">
+
+Paket GD-nin əsas problemi budur: hər addım bütün təlim dəstindən keçir. 10 milyon nümunədə bir addım üçün 10 milyon hesablama lazımdır.
+
+<Term id="stochastic-gradient-descent" full /> əks ucdan gedir. Hər addımda **təsadüfi seçilmiş bir nümunə** götürür və qradiyenti yalnız onun üzərində hesablayır:
+
+- hər addım **çox sürətlidir** və yaddaşda yalnız bir nümunə saxlamaq lazımdır;
+- nəhəng məlumatda və onlayn öyrənmədə işləyə bilir (Fəsil 1).
+
+Bunun qiyməti var: tək nümunənin qradiyenti ümumi istiqamətin **küylü təxminidir**. Ona görə də yol hamar deyil, titrəyişlidir. Xərc ümumilikdə azalır, lakin yuxarı-aşağı sıçrayır. Minimuma çatdıqda belə alqoritm onun ətrafında “gəzməyə” davam edir.
+
+Bütün təlim dəstindən bir dəfə tam keçid <Term id="epoch" full /> adlanır. Paket GD bir epoxada parametrləri bir dəfə, SGD isə $m$ dəfə yeniləyir.
+
+<Callout variant="insight" title="Küyün faydası">
+Qabarıq olmayan xərc funksiyalarında, məsələn neyron şəbəkələrdə, SGD-nin titrəyişi **yerli minimumlardan çıxmağa** kömək edə bilər. Paket GD isə ilk rast gəldiyi çuxurda qalar.
+</Callout>
+
+</Section>
+
+<Section id="schedule">
+
+Titrəyişin həlli addımları **tədricən kiçiltməkdir**. Əvvəlcə böyük addımlar sürətli irəliləyiş verir və yerli minimumlardan çıxmağa kömək edir. Sonra kiçik addımlar alqoritmi minimumda sakitləşdirir. Hər addımda öyrənmə sürətini təyin edən qayda <Term id="learning-schedule" full /> adlanır. Sadə bir variant:
+
+$$
+\eta(t) = \frac{t_0}{t + t_1}
+$$
+
+Burada $t$ yeniləmənin sıra nömrəsidir, $t_0$ və $t_1$ isə hiperparametrlərdir.
+
+- Sürət **çox tez** azalarsa, alqoritm minimuma çatmamış “donar”.
+- Sürət **çox yavaş** azalarsa, uzun müddət minimumun ətrafında gəzər.
+
+<Callout variant="warning" title="Məlumatı qarışdırın">
+SGD nümunələrin **təsadüfi** gəldiyini fərz edir. Məlumat sinfə və ya tarixə görə sıralanıbsa, hər epoxadan əvvəl onu qarışdırın. Əks halda alqoritm əvvəlcə bir sinfə, sonra digərinə uyğunlaşar və optimuma yaxınlaşmaz.
+</Callout>
+
+</Section>
+
+<Section id="mini-batch">
+
+<Term id="mini-batch-gradient-descent" full /> qızıl ortadır. Qradiyent kiçik təsadüfi qruplar, yəni *mini-paketlər* üzərində hesablanır. Bir qrup adətən 32–256 nümunədən ibarət olur.
+
+- Yol SGD-dən **daha hamardır**, çünki qrupun ortalaması küyü azaldır.
+- Matris əməliyyatları **GPU-da** paralel aparılır. Ona görə də 64 nümunəni emal etmək bir nümunədən 64 dəfə uzun çəkmir.
+
+Dərin öyrənmədə demək olar ki, həmişə mini-paket GD istifadə olunur (Fəsil 10–11).
+
+</Section>
+
+<Section id="simulation">
+
+Üç variant eyni nöqtədən başlayır və eyni sayda epoxa işləyir. Əlamət standartlaşdırılıb.
+
+<Demo id="gd-variants" />
+
+- **1 epoxa:** paket GD cəmi 1 addım atıb, SGD isə 50 addım. SGD minimuma çox yaxındır.
+- **Öyrənmə cədvəli olmadan, 20 epoxa:** stoxastik yol minimumun ətrafında titrəyir və artıq xərc ~0.18 olaraq qalır. Cədvəllə isə ~0-a enir.
+- **Mini-paket** hər iki dünyanın yaxşı tərəflərini birləşdirir: sürətli və nisbətən hamar.
+
+</Section>
+
+<Section id="comparison">
+
+| Alqoritm | Böyük m | Böyük n | Yaddaşdan böyük məlumat | Hiperparametrlər | Miqyaslama lazımdır? | Scikit-Learn |
+|---|---|---|---|---|---|---|
+| Normal tənlik / SVD | Sürətli | Yavaş | Xeyr | 0 | Xeyr | `LinearRegression` |
+| Paket GD | Yavaş | Sürətli | Xeyr | 2 (η, iterasiya) | Bəli | — |
+| Stoxastik GD | Sürətli | Sürətli | Bəli | ≥ 2 (+ cədvəl) | Bəli | `SGDRegressor` |
+| Mini-paket GD | Sürətli | Sürətli | Bəli | ≥ 2 (+ paket ölçüsü) | Bəli | — (PyTorch-da standart) |
+
+Təlimdən sonra bütün alqoritmlər eyni növ modelə gəlir: xətti model və eyni üsulla proqnoz. Fərq yalnız **təlimin necə aparılmasındadır**.
+
+</Section>
+
+<Section id="python">
+
+SGD (öyrənmə cədvəli ilə), mini-paket GD (paket = 16) və Scikit-Learn-in `SGDRegressor` sinfi:
+
+<PythonExample id="ch04.code.sgd" />
+
+Üçü də normal tənliyin həllinə ($[3.004, 1.754]$) yaxındır. Stoxastik variantlar dəqiq həllə “bir az yaxın” dayanır. Bu, onların təbiətidir və adətən yeni məlumatdakı performansa təsir etmir.
+
+</Section>
+
+<Section id="summary">
+
+- **SGD:** hər addımda 1 nümunə. Sürətlidir, böyük məlumatda işləyir, yolu isə titrəyişlidir.
+- **Öyrənmə cədvəli** addımları kiçildir və titrəyişi sakitləşdirir. **Məlumatı qarışdırın.**
+- **Mini-paket:** kompromisdir, GPU-da səmərəlidir və dərin öyrənmədə standartdır.
+- Bütün alqoritmlər eyni modelə gəlir. Fərq yalnız təlimin necə aparılmasındadır.
+
+</Section>

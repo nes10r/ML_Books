@@ -1,0 +1,55 @@
+<Section id="task-map">
+
+Real layihədə heç kim “mənə klasterləşdirmə lazımdır” deyə başlamır. Biznes sualı ilə başlanır: “Hansı müştərilər bizi tərk edəcək?”, “Bu əməliyyat saxtadırmı?”. Mühəndisin ilk vəzifəsi həmin sualı **ML tapşırığına çevirməkdir**.
+
+Ən çox rast gəlinən tapşırıq növləri bunlardır:
+
+- <Term id="classification" full /> — cavab bir neçə sinifdən biridir: spam/spam deyil, xəstə/sağlam, pişik/it/quş.
+- <Term id="regression" full /> — cavab ədəddir: mənzilin qiyməti, sabahkı temperatur, çatdırılma müddəti.
+- <Term id="clustering" full /> — etiket yoxdur, oxşar obyektləri qruplaşdırırıq: müştəri seqmentləri.
+- <Term id="anomaly-detection" full /> — qeyri-adi halları tapırıq: saxta əməliyyat, istehsalatda nasaz detal.
+- <Term id="dimensionality-reduction" full /> — çox əlaməti az, lakin informativ əlamətlərə çeviririk: vizuallaşdırma, sıxılma.
+- **Tövsiyə sistemləri** — keçmiş davranışa əsasən istifadəçiyə maraqlı ola biləcək məhsulu təklif edirik.
+
+</Section>
+
+<Section id="examples">
+
+| Real problem | Tapşırıq növü | Tipik yanaşma (kursda) |
+|---|---|---|
+| İstehsal xəttində məhsul şəkillərindən qüsurlu detalları tapmaq | Şəkil təsnifatı | Konvolyusiya şəbəkələri (Fəsil 12) |
+| Tibbi skanlarda şişin sərhədlərini müəyyən etmək | Semantik seqmentasiya | CNN, vision transformerlər (Fəsil 12, 16) |
+| Xəbər məqalələrini mövzulara ayırmaq | Mətn təsnifatı | RNN, transformerlər (Fəsil 14–15) |
+| Gələn rübün satış həcmini proqnozlaşdırmaq | Reqressiya / zaman sırası | Xətti modellər, ağaclar, RNN (Fəsil 4, 6, 13) |
+| Səsli komandaları anlamaq | Nitqin tanınması | Ardıcıllıq modelləri, transformerlər |
+| Kart əməliyyatlarında saxtakarlığı aşkar etmək | Anomaliya aşkarlanması | Nəzarətsiz üsullar (Fəsil 8) |
+| Müştəriləri alış vərdişlərinə görə seqmentləşdirmək | Klasterləşdirmə | k-means, DBSCAN (Fəsil 8) |
+| Yüksək ölçülü məlumatı 2D qrafikdə göstərmək | Ölçünün azaldılması | PCA, manifold üsulları (Fəsil 7) |
+| Çatbot və ya virtual assistent | Mətn generasiyası | Böyük dil modelləri (Fəsil 15) |
+| Oyunda və ya robotda optimal strategiya öyrənmək | Ardıcıl qərar qəbulu | Gücləndirməli öyrənmə (Fəsil 19) |
+
+<Callout variant="insight">
+Eyni məlumat fərqli suallara görə fərqli tapşırığa çevrilə bilər. Məsələn, müştəri məlumatı ilə həm “imtina edəcəkmi?” (təsnifat), həm “nə qədər xərcləyəcək?” (reqressiya), həm də “hansı qrupa aiddir?” (klasterləşdirmə) suallarını vermək olar.
+</Callout>
+
+</Section>
+
+<Section id="not-always-ml">
+
+Yeni başlayanların ən çox etdiyi səhvlər bunlardır:
+
+- **Məqsədi ölçmədən başlamaq.** “Model yaxşı olsun” məqsəd deyil. Hansı metrika, hansı hədd? Məsələn, “saxta əməliyyatların 90%-ni tutmaq, normal əməliyyatların 1%-dən azını bloklamaq”.
+- **Qaydalarla həll olunan problemə ML tətbiq etmək.** Sadə qayda sistemi daha ucuz, şəffaf və etibarlıdır.
+- **Məlumat olmadan ML planlamaq.** Etiketli nümunələr yoxdursa, əvvəlcə onları necə toplayacağınızı düşünün.
+- **Səhvlərin qiymətini nəzərə almamaq.** Tibbi diaqnozda xəstəliyi buraxmaq yanlış həyəcandan qat-qat bahadır. Bu, metrika seçimini dəyişir.
+
+</Section>
+
+<Section id="summary">
+
+- ML layihəsi biznes sualını **düzgün tapşırıq növünə** çevirməklə başlayır.
+- Əsas tapşırıqlar: təsnifat, reqressiya, klasterləşdirmə, anomaliya aşkarlanması, ölçünün azaldılması və tövsiyə.
+- Eyni məlumat fərqli suallarla fərqli tapşırıqlara çevrilə bilər.
+- Başlamazdan əvvəl ölçülə bilən məqsəd qoyun və ML-in həqiqətən lazım olduğuna əmin olun.
+
+</Section>

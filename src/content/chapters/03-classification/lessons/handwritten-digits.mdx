@@ -1,0 +1,52 @@
+<Section id="mnist">
+
+Fəsil 2-də ədəd (qiymət) proqnozlaşdırdıq, yəni reqressiya etdik. İndi ikinci böyük nəzarətli tapşırığa keçirik: <Term id="classification" full />. Burada cavab ədəd deyil, **sinifdir**.
+
+ML dünyasında təsnifatın klassik “Hello, World!” nümunəsi <Term id="mnist" full /> dəstidir. O, ABŞ-da orta məktəb şagirdlərinin və Siyahıyaalma Bürosu əməkdaşlarının yazdığı 70 000 əlyazma rəqəmdən ibarətdir. Hər şəkil 28 × 28 = 784 piksel ölçüsündədir. Yeni alqoritm çıxanda tədqiqatçılar ilk olaraq onu MNIST-də sınayırlar.
+
+Bu fəsildə MNIST-in **kiçik qardaşı** ilə işləyəcəyik: scikit-learn ilə birlikdə gələn 8 × 8 pikselli rəqəmlər dəsti. Səbəbləri bunlardır:
+
+- internet tələb etmir: `load_digits()` dərhal işləyir;
+- bütün təcrübələr saniyələr içində bitir;
+- brauzerdəki simulyasiyalar real məlumatla işləyə bilir.
+
+Öyrənəcəyimiz bütün üsullar MNIST-ə də olduğu kimi tətbiq olunur. MNIST-i sınamaq istəsəniz: `fetch_openml("mnist_784", as_frame=False)`. Diqqət: ~50 MB yükləmə tələb edir.
+
+<Dataset id="digits-8x8" />
+
+</Section>
+
+<Section id="pixels">
+
+Kompüter üçün şəkil sadəcə ədədlər cədvəlidir. 8 × 8 şəkildə hər piksel 0 (ağ) ilə 16 (tam qara) arasında bir intensivlikdir. Model üçün bu cədvəl **64 ədəddən ibarət bir sətrə** açılır:
+
+$$
+\mathbf{x} = (x_1, x_2, \ldots, x_{64}), \qquad x_j \in [0, 16]
+$$
+
+Deməli, hər şəkil 64 ölçülü fəzada bir nöqtədir. Bənzər görünən rəqəmlər (məsələn, iki fərqli “3”) bu fəzada bir-birinə yaxın yerləşir. Təsnifatçının işi 0–9 siniflərini bir-birindən ayıran sərhədləri tapmaqdır.
+
+<Callout variant="insight">
+Bu sadə təsvirdə piksellərin **qonşuluğu** itir: model 1-ci və 2-ci pikselin yan-yana olduğunu “bilmir”. Fəsil 12-də konvolyusiya şəbəkələri məhz bu məkan quruluşundan istifadə edəcək.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+Məlumatı yükləyək, bir şəkli mətn “qrafikası” ilə göstərək və **ilk iş olaraq** test dəstini ayıraq. Rəqəmlərin payı test dəstində də eyni qalsın deyə stratifikasiyadan istifadə edirik (Fəsil 2).
+
+<PythonExample id="ch03.code.load-digits" />
+
+Hər rəqəmdən 174–183 şəkil var, yəni məlumat balanslıdır. 1 437 şəkil təlim, 360 şəkil isə test üçün ayrılıb. Bu fəslin bütün təcrübələri eyni bölgüdən (`random_state=42`) istifadə edir.
+
+</Section>
+
+<Section id="summary">
+
+- Təsnifat: cavab **sinifdir**. Klassik nümunə **MNIST**-dir (70 000 şəkil, 28×28).
+- Biz eyni ideyanı 8×8 rəqəmlər dəsti ilə öyrənirik: 1 797 şəkil, oflayn, sürətli.
+- Şəkil → **64 əlamətli vektor**. Hər piksel bir əlamətdir.
+- Test dəsti stratifikasiya ilə ayrılır: 1 437 təlim + 360 test.
+
+</Section>

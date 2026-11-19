@@ -1,0 +1,80 @@
+<Section id="bagging">
+
+Müxtəlif modellər əldə etməyin ikinci yolu **eyni alqoritmi** təlim dəstinin fərqli təsadüfi alt-çoxluqlarında öyrətməkdir.
+
+- Seçmə **qaytarmaqla** aparılırsa, yəni eyni nümunə bir neçə dəfə düşə bilərsə, bu, <Term id="bootstrap" full />dir. Belə ansambl <Term id="bagging" full /> adlanır. Ad *bootstrap aggregating* sözlərinin qısaltmasıdır.
+- Seçmə **qaytarmadan** aparılırsa, bu, <Term id="pasting" full />dir.
+
+Bütün modellər öyrədildikdən sonra yeni nümunə üçün onların proqnozları birləşdirilir. Təsnifatda statistik moda, yəni ən çox rast gələn sinif (və ya yumşaq səsvermə), reqressiyada isə orta götürülür.
+
+Ayrı-ayrı modellərin hər biri məlumatın bir hissəsini görür. Ona görə də tam məlumatda öyrədilmiş modeldən daha çox sürüşmə (bias) ilə işləyir. Lakin birləşdirmə həm sürüşməni, həm də dispersiyanı azaldır. Nəticədə ansamblın sürüşməsi tək modelə yaxın, **dispersiyası isə xeyli aşağı** olur. Fəsil 5-dən bildiyimiz kimi, qərar ağaclarının əsas problemi məhz yüksək dispersiyadır. Ona görə bagging onlar üçün ideal həlldir.
+
+Ən gözəl xüsusiyyətlərdən biri: bütün modellər **paralel** öyrədilə bilər, yəni fərqli CPU nüvələrində və ya serverlərdə. Scikit-Learn-də bunun üçün `n_jobs=-1` yazmaq kifayətdir.
+
+</Section>
+
+<Section id="oob">
+
+Bootstrap seçmədə $m$ nümunədən $m$ dəfə qaytarmaqla seçirik. Hər nümunənin konkret bir ağac üçün **heç seçilməmə** ehtimalı belədir:
+
+$$
+\left(1 - \frac{1}{m}\right)^{m} \xrightarrow{\ m \to \infty\ } e^{-1} \approx 0.368
+$$
+
+Deməli, hər ağac təlim nümunələrinin təxminən **37%-ni görmür**. Bunlar həmin ağac üçün *çanta xaricindəki* (out-of-bag, OOB) nümunələrdir. Onlar pulsuz validasiya dəstidir.
+
+<Term id="out-of-bag-evaluation" full /> belə işləyir:
+
+1. Hər təlim nümunəsi yalnız onu **görməyən** ağacların səsverməsi ilə proqnozlaşdırılır.
+2. Bu proqnozların dəqiqliyi ansamblın ümumiləşdirmə dəqiqliyinin təxminidir.
+
+Scikit-Learn-də `oob_score=True` yazmaq kifayətdir. Ayrıca validasiya dəstinə ehtiyac qalmır, bu da xüsusən kiçik məlumatda qiymətlidir.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada 100 ağac brauzerdə real vaxtda öyrədilir: hər ağac təlim dəstinin öz bootstrap nüsxəsində öyrənir. Ağac sayını dəyişərək ansamblın necə formalaşdığını izləyin.
+
+<Demo id="bagging-forest" />
+
+Tək ağacın bölgələri “cırıqdır”, xırda adalar küylü nöqtələri əzbərləyir. Ağaclar çoxaldıqca səsvermə bu adaları hamarlayır və sərhəd “aylara” yaxınlaşır. Diqqət edin: OOB qiyməti test dəqiqliyinə yaxındır, halbuki o, test dəstindən istifadə etmədən hesablanıb.
+
+</Section>
+
+<Section id="patches">
+
+Bagging yalnız **nümunələri** deyil, **əlamətləri** də təsadüfi seçə bilər. `BaggingClassifier`-də bunun üçün iki hiperparametr var: `max_features` və `bootstrap_features`. Hər model əlamətlərin təsadüfi alt-çoxluğunda öyrənir. Bu, xüsusən çoxlu əlamətli məlumatda faydalıdır, məsələn şəkillərdə.
+
+- **Random Patches:** həm nümunələr, həm də əlamətlər seçilir.
+- **<Term id="random-subspaces" full />:** bütün nümunələr saxlanılır (`bootstrap=False`, `max_samples=1.0`), yalnız əlamətlər seçilir.
+
+Əlamətlərin seçilməsi modelləri daha da müxtəlif edir. Dispersiya bir qədər də azalır, sürüşmə isə bir az artır.
+
+</Section>
+
+<Section id="python">
+
+Tək ağac, bagging, pasting və OOB qiymətləndirmə:
+
+<PythonExample id="ch06.code.bagging" />
+
+| Model | Test dəqiqliyi |
+|---|---|
+| Tək ağac | 0.883 |
+| Bagging (300 ağac, hərəsi 300 nümunə) | **0.915** |
+| Pasting | 0.912 |
+| OOB təxmini (bagging) | 0.903 |
+
+OOB təxmini (0.903) test nəticəsinə (0.915) yaxındır, lakin bir az ehtiyatlıdır. Bu, adi haldır: hər nümunəni ağacların yalnız bir hissəsi qiymətləndirir. `oob_decision_function_` isə hər təlim nümunəsi üçün OOB ehtimallarını verir.
+
+</Section>
+
+<Section id="summary">
+
+- **Bagging:** eyni alqoritm məlumatın fərqli bootstrap nüsxələrində öyrədilir və nəticələr ortalanır. **Pasting:** eyni ideya, lakin qaytarmadan seçmə ilə.
+- Əsas təsir **dispersiyanın azalmasıdır**. Təlim paralel aparıla bilər.
+- Hər ağac nümunələrin ~37%-ni görmür. **OOB qiymətləndirmə** ayrıca validasiya dəsti olmadan ümumiləşdirməni təxmin edir.
+- Əlamətlərin də təsadüfi seçilməsi: **random patches** və **random subspaces**.
+
+</Section>

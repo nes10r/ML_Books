@@ -1,0 +1,92 @@
+<Section id="probabilities">
+
+Bəzi reqressiya alqoritmlərini təsnifat üçün də istifadə etmək olar. <Term id="logistic-regression" full /> buna ən məşhur nümunədir. Adında “reqressiya” sözü olsa da, o, təsnifat modelidir: nümunənin müsbət sinfə aid olma **ehtimalını** hesablayır.
+
+Xətti reqressiya kimi əlamətlərin çəkili cəmini hesablayır. Lakin nəticəni birbaşa qaytarmır, onu <Term id="sigmoid" full /> funksiyasından keçirir:
+
+$$
+\hat{p} = h_{\boldsymbol{\theta}}(\mathbf{x}) = \sigma\left(\boldsymbol{\theta}^{\intercal}\mathbf{x}\right), \qquad \sigma(t) = \frac{1}{1 + e^{-t}}
+$$
+
+<Media id="ch04.media.sigmoid" />
+
+Siqmoid istənilən ədədi $(0, 1)$ aralığına çevirir. Proqnoz sadədir: $\hat{p} \geq 0.5$ olduqda $\hat{y} = 1$, əks halda $\hat{y} = 0$. $\sigma(t) \geq 0.5 \Leftrightarrow t \geq 0$ olduğu üçün model **bal müsbət olduqda** müsbət sinfi seçir.
+
+Bal $t = \boldsymbol{\theta}^{\intercal}\mathbf{x}$ çox vaxt **logit** adlanır. Səbəbi budur: logit funksiyası $\log(p / (1 - p))$ siqmoidin tərsidir. Yəni bal müsbət sinif ehtimalının “şans nisbətinin” loqarifmidir (*log-odds*).
+
+</Section>
+
+<Section id="cost">
+
+Modelin hansı xərc funksiyası ilə öyrədilməsi intuisiyaya əsaslanır. Bir nümunə üçün:
+
+$$
+c(\boldsymbol{\theta}) = \begin{cases} -\log(\hat{p}), & y = 1 \\ -\log(1 - \hat{p}), & y = 0 \end{cases}
+$$
+
+- Həqiqi sinif 1-dirsə və model $\hat{p} \approx 1$ deyirsə, xərc $\approx 0$-dır. $\hat{p} \to 0$ olduqda isə xərc sonsuzluğa gedir.
+- $y = 0$ üçün tam əksinə.
+
+Bütün təlim dəsti üzrə orta qiymət <Term id="log-loss" full /> adlanır:
+
+$$
+J(\boldsymbol{\theta}) = -\frac{1}{m}\sum_{i=1}^{m}\left[y^{(i)}\log\hat{p}^{(i)} + \left(1 - y^{(i)}\right)\log\left(1 - \hat{p}^{(i)}\right)\right]
+$$
+
+Log itki **əmin, lakin səhv** proqnozları çox ağır cəzalandırır. Həqiqi sinif 1, $\hat{p} = 0.01$ olduqda nümunənin itkisi $-\ln 0.01 \approx 4.6$-dır.
+
+Pis xəbər: minimallaşdıran $\boldsymbol{\theta}$ üçün normal tənlik kimi qapalı düstur yoxdur. Yaxşı xəbər: funksiya **qabarıqdır**, ona görə də qradiyent enmə qlobal minimumu tapır. Qradiyent xətti reqressiyadakına çox bənzəyir:
+
+$$
+\frac{\partial}{\partial \theta_j}J(\boldsymbol{\theta}) = \frac{1}{m}\sum_{i=1}^{m}\left(\sigma\left(\boldsymbol{\theta}^{\intercal}\mathbf{x}^{(i)}\right) - y^{(i)}\right)x_j^{(i)}
+$$
+
+Yenə də “proqnoz xətası × əlamət” ortalanır. Fərq yalnız proqnozun siqmoiddən keçməsidir.
+
+</Section>
+
+<Section id="boundary">
+
+Model $\hat{p} = 0.5$ olan nöqtələrdə qərarsızdır. Bu nöqtələr <Term id="decision-boundary" full />ni təşkil edir:
+
+$$
+\boldsymbol{\theta}^{\intercal}\mathbf{x} = 0
+$$
+
+Bu, xətti tənlikdir. İki əlamət üçün sərhəd düz xətt, üç əlamət üçün müstəvi, daha çox əlamət üçün isə hipermüstəvidir. Deməli, logistik reqressiya **xətti təsnifatçıdır**. Əyri sərhəd lazım olduqda polinom əlamətlər əlavə etmək olar, eynilə polinom reqressiyada olduğu kimi.
+
+Digər xətti modellər kimi logistik reqressiya da requlyarlaşdırılır. Scikit-Learn-də defolt olaraq $\ell_2$ cəriməsi tətbiq olunur. Gücü isə `alpha` ilə yox, **tərs** parametr `C` ilə idarə olunur: **C nə qədər kiçikdirsə, requlyarlaşdırma o qədər güclüdür**.
+
+</Section>
+
+<Section id="simulation">
+
+Sintetik nümunə: 200 tələbə, iki əlamət var. Həftəlik oxuma saatı və imtahandan əvvəlki yuxu saatı. Hədəf isə imtahandan keçib-keçməmədir. Model qradiyent enmə ilə addım-addım öyrənir. Əlamətlər standartlaşdırılıb.
+
+<Demo id="logistic-boundary" />
+
+Başlanğıcda bütün çəkilər sıfırdır: hər kəs üçün $\hat{p} = 0.5$, log itki isə $\ln 2 \approx 0.693$-dür. Təlim gedişində sərhəd yerinə oturur və log itki ~0.34-ə enir. Sərhədə yaxın tələbələr üçün ehtimal 0.5 ətrafındadır. Model onlar haqqında haqlı olaraq əmin deyil.
+
+</Section>
+
+<Section id="python">
+
+Eyni tip məlumatı Scikit-Learn ilə öyrədirik, ehtimalları hesablayırıq və qərar sərhədini analitik tapırıq:
+
+<PythonExample id="ch04.code.logistic" />
+
+- Model test dəstində 92% dəqiqlik göstərir, log itki 0.283-dür.
+- Öyrənilmiş çəkilər $[0.836, 0.762]$ gizli “həqiqi” əlaqəyə ($0.9$, $0.8$) yaxındır.
+- **Şərh:** 7 saat yatan tələbə üçün sərhəd ~3.7 saat oxumaqdır. Bundan çox oxuyan tələbənin keçmə ehtimalı 50%-dən yuxarıdır.
+- $C = 0.01$ (güclü requlyarlaşdırma) çəkiləri $[0.45, 0.23]$-ə qədər kiçildir.
+
+</Section>
+
+<Section id="summary">
+
+- Logistik reqressiya: $\hat{p} = \sigma(\boldsymbol{\theta}^{\intercal}\mathbf{x})$. $\hat{p} \geq 0.5 \Leftrightarrow \boldsymbol{\theta}^{\intercal}\mathbf{x} \geq 0$.
+- Xərc funksiyası **log itkidir**: qabarıqdır, qapalı həlli yoxdur və qradiyent enmə ilə öyrədilir.
+- Qərar sərhədi **xəttidir**: $\boldsymbol{\theta}^{\intercal}\mathbf{x} = 0$.
+- Scikit-Learn-də requlyarlaşdırma `C` ilə idarə olunur: **kiçik C = güclü requlyarlaşdırma**.
+
+</Section>

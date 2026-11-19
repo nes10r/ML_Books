@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" font-family="Inter, system-ui, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">Paket və onlayn öyrənmə</title>
+  <desc id="d">Paket öyrənmədə bütün məlumat bir dəfə modelə verilir. Onlayn öyrənmədə məlumat kiçik hissələrlə davamlı gəlir və model hər hissə ilə yenilənir.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6366f1"/></marker>
+  </defs>
+  <rect width="960" height="400" rx="20" fill="#ffffff"/>
+  <text x="40" y="52" font-size="18" font-weight="700" fill="#0f172a">Paket öyrənmə (batch)</text>
+  <rect x="40" y="76" width="200" height="80" rx="12" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="140" y="112" text-anchor="middle" font-size="15" fill="#334155">Bütün məlumat</text>
+  <text x="140" y="134" text-anchor="middle" font-size="12" fill="#64748b">(bir dəfəyə)</text>
+  <path d="M240 116 L318 116" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="322" y="86" width="160" height="60" rx="12" fill="#0f172a"/>
+  <text x="402" y="121" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">Təlim</text>
+  <path d="M482 116 L560 116" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="564" y="86" width="160" height="60" rx="12" fill="#fff" stroke="#0f172a" stroke-width="2"/>
+  <text x="644" y="121" text-anchor="middle" font-size="15" fill="#0f172a" font-weight="600">Model</text>
+  <path d="M724 116 L802 116" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <text x="812" y="112" font-size="14" fill="#334155">İstifadə</text>
+  <text x="812" y="132" font-size="12" fill="#64748b">(dəyişmir)</text>
+  <line x1="40" y1="200" x2="920" y2="200" stroke="#e2e8f0" stroke-dasharray="6 6"/>
+  <text x="40" y="244" font-size="18" font-weight="700" fill="#312e81">Onlayn öyrənmə (online)</text>
+  <g fill="#e0e7ff" stroke="#a5b4fc">
+    <rect x="40" y="280" width="34" height="60" rx="6"/><rect x="82" y="280" width="34" height="60" rx="6"/><rect x="124" y="280" width="34" height="60" rx="6"/><rect x="166" y="280" width="34" height="60" rx="6"/>
+  </g>
+  <text x="120" y="364" text-anchor="middle" font-size="12" fill="#6366f1">kiçik hissələr (mini-batch)</text>
+  <path d="M206 310 L318 310" stroke="#6366f1" stroke-width="2" marker-end="url(#b)"/>
+  <rect x="322" y="280" width="160" height="60" rx="12" fill="#4f46e5"/>
+  <text x="402" y="315" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">Yeniləmə</text>
+  <path d="M482 310 L560 310" stroke="#6366f1" stroke-width="2" marker-end="url(#b)"/>
+  <rect x="564" y="280" width="160" height="60" rx="12" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="644" y="315" text-anchor="middle" font-size="15" fill="#3730a3" font-weight="600">Model</text>
+  <path d="M644 280 C644 236 402 236 402 276" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#b)"/>
+  <text x="523" y="232" text-anchor="middle" font-size="12" fill="#6366f1">hər yeni hissədən sonra</text>
+  <path d="M724 310 L802 310" stroke="#6366f1" stroke-width="2" marker-end="url(#b)"/>
+  <text x="812" y="306" font-size="14" fill="#3730a3">İstifadə</text>
+  <text x="812" y="326" font-size="12" fill="#6366f1">(daim uyğunlaşır)</text>
+</svg>

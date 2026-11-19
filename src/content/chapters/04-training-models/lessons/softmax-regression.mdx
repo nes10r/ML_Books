@@ -1,0 +1,98 @@
+<Section id="softmax">
+
+Logistik reqressiya iki sinif üçündür. Fəsil 3-də çoxsinifli tapşırıq üçün OvR və OvO strategiyalarını öyrəndik. Logistik reqressiyanı isə birbaşa çoxsinifli modelə ümumiləşdirmək olar. Bu model <Term id="softmax-regression" full />dır.
+
+İdeya iki addımdan ibarətdir:
+
+1. Hər $k$ sinfi üçün ayrıca **bal** hesablanır. Hər sinfin öz parametr vektoru var:
+
+$$
+s_k(\mathbf{x}) = \left(\boldsymbol{\theta}^{(k)}\right)^{\intercal}\mathbf{x}
+$$
+
+2. Ballar **softmax funksiyası** ilə ehtimallara çevrilir:
+
+$$
+\hat{p}_k = \sigma\big(\mathbf{s}(\mathbf{x})\big)_k = \frac{\exp\big(s_k(\mathbf{x})\big)}{\sum_{j=1}^{K}\exp\big(s_j(\mathbf{x})\big)}
+$$
+
+Softmax-ın xüsusiyyətləri bunlardır:
+
+- bütün çıxışlar müsbətdir və **cəmi 1-dir**, yəni ehtimal paylanması alınır;
+- ən böyük bal ən böyük ehtimalı alır, lakin digər siniflər də müəyyən ehtimal saxlayır;
+- ballar arasındakı fərq böyüdükcə paylanma “kəskinləşir”.
+
+Proqnoz ən yüksək ehtimallı sinifdir: $\hat{y} = \arg\max_k \hat{p}_k$. Bütün parametr vektorları adətən bir $\boldsymbol{\Theta}$ matrisində sətir kimi saxlanılır.
+
+<Callout variant="info">
+Softmax siniflərin **bir-birini istisna etdiyini** fərz edir: nümunə yalnız bir sinfə aiddir. Çoxetiketli tapşırıq üçün (Fəsil 3) hər etiketə ayrıca siqmoid tətbiq edilməlidir.
+</Callout>
+
+</Section>
+
+<Section id="cross-entropy">
+
+Model həqiqi sinfə yüksək ehtimal verməlidir. Bunu <Term id="cross-entropy" full /> ölçür:
+
+$$
+J(\boldsymbol{\Theta}) = -\frac{1}{m}\sum_{i=1}^{m}\sum_{k=1}^{K} y_k^{(i)}\log\left(\hat{p}_k^{(i)}\right)
+$$
+
+Burada $y_k^{(i)}$ $i$-ci nümunə $k$ sinfinə aiddirsə 1, əks halda 0-dır, yəni one-hot vektordur. Deməli, hər nümunə üçün yalnız **həqiqi sinfin ehtimalının loqarifmi** nəzərə alınır. $K = 2$ olduqda çarpaz entropiya log itkiyə bərabərdir.
+
+Qradiyent də tanış formadadır:
+
+$$
+\nabla_{\boldsymbol{\theta}^{(k)}}J(\boldsymbol{\Theta}) = \frac{1}{m}\sum_{i=1}^{m}\left(\hat{p}_k^{(i)} - y_k^{(i)}\right)\mathbf{x}^{(i)}
+$$
+
+“Proqnoz ehtimalı − həqiqət” hasili əlamətlə vurulub ortalanır. Bu, xətti və logistik reqressiyada gördüyümüz eyni naxışdır. Fəsil 9–10-da neyron şəbəkələrin çıxış qatında məhz bu softmax + çarpaz entropiya cütü istifadə olunacaq.
+
+</Section>
+
+<Section id="worked-example">
+
+Üç sinif üçün ballar $\mathbf{s} = (2, 1, 0)$ olsun. Həqiqi sinif birincidir.
+
+**1. Eksponentlər:** $e^2 \approx 7.39$, $e^1 \approx 2.72$, $e^0 = 1$. Cəmi $\approx 11.11$.
+
+**2. Ehtimallar:**
+
+$$
+\hat{\mathbf{p}} \approx \left(\frac{7.39}{11.11},\ \frac{2.72}{11.11},\ \frac{1}{11.11}\right) \approx (0.665,\ 0.245,\ 0.090)
+$$
+
+Cəm: $0.665 + 0.245 + 0.090 = 1$. ✓
+
+**3. Bu nümunənin çarpaz entropiyası:** $-\ln 0.665 \approx 0.41$.
+
+**4. Qradiyentin “xəta” hissəsi:** $\hat{\mathbf{p}} - \mathbf{y} = (0.665 - 1,\ 0.245,\ 0.090) = (-0.335,\ 0.245,\ 0.090)$. Qradiyent enmə birinci sinfin balını **artıracaq** (mənfi xəta), digərlərininkini isə **azaldacaq**.
+
+<Callout variant="tip" title="Ədədi sabitlik">
+$e^{1000}$ kompüterdə sonsuzluqdur. Softmax-ı hesablayarkən əvvəlcə bütün ballardan **maksimumu çıxın**: $\text{softmax}(\mathbf{s}) = \text{softmax}(\mathbf{s} - \max \mathbf{s})$. Nəticə dəyişmir, daşma isə aradan qalxır.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+Scikit-Learn-in `LogisticRegression` sinfi ikidən çox sinif gördükdə avtomatik olaraq **softmax (multinomial)** rejimində işləyir. Onu scikit-learn ilə gələn şərab məlumatında sınayırıq. Məlumatda 178 nümunə, 13 kimyəvi əlamət və 3 növ var:
+
+<PythonExample id="ch04.code.softmax" />
+
+- Hər nümunənin üç ehtimalının cəmi 1-dir. Model bəzi nümunələrdə çox əmindir (0.999), bəzilərində isə bir qədər az (0.926).
+- Test dəqiqliyi 100%-dir, çarpaz entropiya 0.067-dir. Kiçik test dəstində (45 nümunə) 100% təsadüf ola bilər. 5 qatlı CV nəticəsi (98.5%) daha etibarlı qiymətləndirmədir.
+- Parametrlər matrisi 3 × 13-dür: hər sinif üçün 13 çəki.
+
+</Section>
+
+<Section id="summary">
+
+- **Softmax reqressiyası:** hər sinif üçün bal hesablayır, softmax ilə ehtimala çevirir və ən böyüyünü seçir.
+- Softmax çıxışları müsbətdir və **cəmi 1-dir**. Siniflər bir-birini istisna edir.
+- Xərc funksiyası **çarpaz entropiyadır**. Qradiyent “ehtimal − həqiqət” × əlamət formasındadır.
+- Bu cüt (softmax + çarpaz entropiya) neyron şəbəkələrin təsnifat qatının əsasıdır.
+
+Təbriklər! Fəsil 4-ü tamamladınız. Bilikləri yoxlamaq üçün [Fəsil 4-ün yekun testini](/exercises/ch04.quiz.final) həll edin.
+
+</Section>

@@ -1,0 +1,102 @@
+<Section id="real-data">
+
+Birinci fəsildə ML-in xəritəsini çəkdik. İndi isə həmin xəritə ilə real səyahətə çıxırıq. Bu fəsildə **bir layihəni başdan sona** aparacağıq. Siz yeni işə qəbul olunmuş məlumat alimisiniz və əmlak şirkəti sizdən Bakıda mənzil qiymətlərini proqnozlaşdıran model istəyir.
+
+Öyrənmək üçün ən yaxşısı **real məlumatla** işləməkdir. Süni “oyuncaq” misallarda olmayan problemlər məhz realda çıxır: boş xanalar, yazı səhvləri, əyilmiş paylanmalar. Bu kurs üçün “Bakı mənzilləri” adlı məlumat dəsti hazırlanıb. Onda 2 400 mənzil, 10 rayon, sahə, təmir, kupça, metroya məsafə və qiymət var.
+
+<Callout variant="info" title="Məlumat haqqında qeyd">
+Dəst təlim məqsədilə sintetik yaradılıb və real bazar qiymətlərini əks etdirmir. Lakin real məlumatda rast gəlinən problemlər (çatışmayan qiymətlər, səhv yazılmış rəqəmlər, kateqoriyalar) bilərəkdən saxlanılıb. Açıq real dəstlər üçün [Kaggle](https://www.kaggle.com/datasets) və [UCI](https://archive.ics.uci.edu) repozitoriyalarına baxa bilərsiniz.
+</Callout>
+
+Bu fəslin dərsləri istənilən ML layihəsinin əsas mərhələlərini ardıcıl izləyir:
+
+<Media id="ch02.media.project-checklist" />
+
+</Section>
+
+<Section id="frame-problem">
+
+Kod yazmazdan əvvəl rəhbərinizə verməli olduğunuz ilk sual budur: **“Biznes məqsədi dəqiq nədir?”** Modelin özü məqsəd deyil. Şirkət ondan necə fayda götürəcək? Cavab həm problemin qoyuluşunu, həm alqoritmi, həm metrikanı, həm də nə qədər vaxt sərf edəcəyinizi müəyyən edir.
+
+Tutaq ki, belə cavab aldınız: *qiymətləndiricilər hazırda hər mənzili əl ilə, oxşar elanlara baxaraq qiymətləndirirlər. Bu, yavaşdır və tez-tez 20%-dən çox səhv edirlər. Modelin proqnozu digər siqnallarla birlikdə “bu mənzilə investisiya qoymağa dəyərmi?” qərarını verən növbəti sistemə ötürüləcək.*
+
+İndi problemi addım-addım çərçivəyə salaq:
+
+1. **Mövcud həll nədir?** Əl ilə qiymətləndirmə. Bu, həm müqayisə üçün baza, həm də ilkin performans hədəfidir: 20%-dən yaxşı olmalıyıq.
+2. **Nəzarət növü?** Hər mənzilin qiyməti (etiket) məlumdur → <Term id="supervised-learning" />.
+3. **Tapşırıq tipi?** Ədəd proqnozlaşdırırıq → <Term id="regression" />. Proqnoz bir neçə əlamətə əsaslandığı üçün *çoxdəyişənli* reqressiyadır. Hər mənzil üçün bir ədəd proqnozlaşdırdığımızdan isə *birdəyişənli çıxışlı* (univariate) reqressiyadır.
+4. **Paket, yoxsa onlayn?** Məlumat axın şəklində gəlmir, həcmi yaddaşa sığır və modeli tez-tez yeniləmək tələb olunmur → <Term id="batch-learning" />.
+
+</Section>
+
+<Section id="pipelines">
+
+Komponentlərin ardıcıllığı <Term id="ml-pipeline" full /> adlanır. Hər komponent məlumatın bir hissəsini alır, emal edir və nəticəni ayrıca saxlanca (fayl, cədvəl, növbə) yazır. Bir müddət sonra növbəti komponent həmin nəticəni götürür.
+
+Bu dizaynın üstünlükləri var:
+
+- Komponentlər bir-birindən **müstəqildir**. Onları fərqli komandalar inkişaf etdirə bilər.
+- Bir komponent sıradan çıxsa, digərləri bir müddət son nəticə ilə **işləməyə davam edir**.
+
+Riski də var: pozulmuş komponent uzun müddət **xəbərsiz** qala bilər, köhnəlmiş məlumat isə sistemin performansını yavaş-yavaş aşağı salır. Ona görə də monitorinq lazımdır (bu fəslin son dərsi).
+
+</Section>
+
+<Section id="performance-measure">
+
+Reqressiya üçün ən geniş yayılmış metrika <Term id="rmse" full />dir. O, sistemin proqnozlarda adətən nə qədər səhv etdiyini göstərir və böyük xətalara daha çox çəki verir:
+
+$$
+\text{RMSE}(\mathbf{X}, h) = \sqrt{\frac{1}{m}\sum_{i=1}^{m}\left(h(\mathbf{x}^{(i)}) - y^{(i)}\right)^2}
+$$
+
+Burada istifadə edəcəyimiz qeydlər belədir:
+
+- $m$ — nümunələrin sayı (bizdə təlim hissəsində 1 920 mənzil);
+- $\mathbf{x}^{(i)}$ — $i$-ci mənzilin bütün əlamətlərindən ibarət vektor, $y^{(i)}$ isə onun həqiqi qiyməti;
+- $\mathbf{X}$ — bütün nümunələrin əlamətlərindən ibarət matris. Hər sətri bir mənzildir;
+- $h$ — sistemin proqnoz funksiyası (*hipotez*): $\hat{y}^{(i)} = h(\mathbf{x}^{(i)})$.
+
+Kənar qiymətlər çoxdursa, <Term id="mae" full /> daha uyğun ola bilər:
+
+$$
+\text{MAE}(\mathbf{X}, h) = \frac{1}{m}\sum_{i=1}^{m}\left|h(\mathbf{x}^{(i)}) - y^{(i)}\right|
+$$
+
+Hər iki metrika iki vektor arasındakı **məsafəni** ölçür: proqnozlar vektoru ilə həqiqi qiymətlər vektoru arasında. Bunun üçün fərqli *normalardan* istifadə olunur:
+
+$$
+\lVert \mathbf{v} \rVert_k = \left(\sum_{i} |v_i|^k\right)^{1/k}
+$$
+
+- $k = 2$ — Evklid norması ($\ell_2$). RMSE-yə uyğun gəlir: adi “düz xətt” məsafəsi.
+- $k = 1$ — Manhetten norması ($\ell_1$). MAE-yə uyğun gəlir: şəhər bloklarında yalnız düz küçələrlə hərəkət edirmiş kimi.
+- $k \to \infty$ — ən böyük komponent ($\ell_\infty$).
+
+**Norma indeksi böyüdükcə böyük qiymətlər daha çox, kiçiklər isə daha az təsir göstərir.** Ona görə də RMSE kənar qiymətlərə MAE-dən həssasdır. Kənar qiymətlər nadirdirsə (paylanma zəng formasına yaxındırsa), RMSE yaxşı işləyir və adətən ona üstünlük verilir.
+
+</Section>
+
+<Section id="assumptions">
+
+Son addım fərziyyələri **yazılı şəkildə** sadalayıb yoxlamaqdır. Bu, ciddi problemləri erkən tutmağa kömək edir.
+
+Biz hədəfin dəqiq ədəd (AZN) olduğunu fərz etdik. Bəs növbəti sistem qiyməti yalnız “ucuz / orta / baha” kateqoriyalarına çevirib istifadə edirsə? O zaman dəqiq qiymət heç kimə lazım deyil və tapşırıq <Term id="classification" /> kimi qurulmalı idi. Bunu bir ay sonra yox, ilk gün öyrənmək lazımdır.
+
+Yeni başlayanların tipik səhvləri:
+
+- **Məqsədi soruşmamaq** və birbaşa model qurmağa başlamaq.
+- **Mövcud həlli (bazanı) bilməmək.** Modelin “yaxşı” olub-olmadığını nə ilə müqayisə edəcəksiniz?
+- **Metrikanı biznes ilə razılaşdırmamaq.** 30 000 AZN RMSE yaxşıdır, yoxsa pis? Bu, istifadəçinin tələbindən asılıdır.
+- **Məlumatın gələcəkdə necə gələcəyini düşünməmək.** Hər gün yenilənəcəkmi? Kim təmin edir? Formatı dəyişə bilərmi?
+
+</Section>
+
+<Section id="summary">
+
+- Layihə **biznes məqsədi** ilə başlayır. Modelin nəticəsi hara və necə ötürülür?
+- Bizim problem: **nəzarətli, çoxdəyişənli reqressiya, paket öyrənmə**.
+- Əsas metrika **RMSE** ($\ell_2$), kənar qiymətlər çox olduqda **MAE** ($\ell_1$).
+- **Fərziyyələri** yazın və yoxlayın. Səhv qoyulmuş problemi heç bir model xilas etmir.
+
+</Section>

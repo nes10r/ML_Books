@@ -1,0 +1,70 @@
+<Section id="axis">
+
+Qərar ağaclarının çoxlu üstünlüyü var: asan oxunurlar, sürətlidirlər, miqyaslama tələb etmirlər. Lakin onların iki ciddi zəif tərəfi də var.
+
+**Birincisi: ağaclar yalnız oxlara perpendikulyar kəsiklər edir.** Hər sual tək əlamət haqqındadır, məsələn “x₁ ≤ t?”. Ona görə də bütün sərhədlər oxlara paraleldir. Həqiqi sərhəd mail olduqda, məsələn “x₂ > x₁”, ağac onu **pilləkən** ilə təqlid etməlidir:
+
+- çoxlu yarpaq lazım olur, yəni model lazımsız mürəkkəbləşir;
+- pilləkən heç vaxt düz xətt deyil, ona görə yeni məlumatda səhvlər yaranır.
+
+Həll yollarından biri məlumatı elə **fırlatmaqdır** ki, əsas istiqamətlər oxlarla üst-üstə düşsün. Bunu PCA (əsas komponentlər analizi) edir. PCA-nı Fəsil 7-də ətraflı öyrənəcəyik. Hələlik `StandardScaler` + `PCA` pipeline-ının məlumatı korrelyasiyalarını aradan qaldıracaq şəkildə fırlatdığını bilmək kifayətdir.
+
+</Section>
+
+<Section id="variance">
+
+**İkincisi: ağacların dispersiyası yüksəkdir.** Məlumatdakı kiçik dəyişiklik, məsələn bir neçə nümunəni silmək, tamam fərqli ağac yarada bilər. Səbəb CART-ın acgöz və iyerarxik təbiətidir. Kökdəki bölgü bir az dəyişsə, ondan aşağıdakı bütün ağac dəyişir.
+
+Hətta eyni məlumatda belə nəticə dəyişə bilər. Scikit-Learn hər düyündə əlamətləri təsadüfi sırayla yoxlayır və bərabər keyfiyyətli bölgülər arasında seçim `random_state`-dən asılıdır.
+
+Bu, Fəsil 4-dəki <Term id="bias-variance-tradeoff" /> baxımından tipik **aşağı sürüşmə, yüksək dispersiya** modelidir. Yaxşı xəbər: çoxlu ağacın proqnozlarını ortalasaq, ayrı-ayrı ağacların təsadüfi səhvləri bir-birini kompensasiya edir və dispersiya kəskin azalır. Bu ideya Fəsil 6-da <Term id="random-forest" full /> adı ilə qarşımıza çıxacaq.
+
+</Section>
+
+<Section id="simulation">
+
+Hər iki problemi canlı görək.
+
+<Demo id="tree-instability" />
+
+**Ox istiqaməti.** Sərhəd 0° olduqda ağaca cəmi 2 yarpaq kifayətdir. 20°-də 8, 45°-də isə 18 yarpaq lazımdır. Məlumat dəyişmir, yalnız onun istiqaməti dəyişir. Bu, ağacın “dünyagörüşünün” oxlara bağlı olduğunu göstərir.
+
+**Yüksək dispersiya.** Hər dəfə məlumatın təsadüfi 80%-i ilə yeni ağac öyrədilir. Kök bölgüsü, yarpaq sayı və bölgələrin forması nəzərəçarpacaq dərəcədə dəyişir, halbuki məlumatın 80%-i hər dəfə eynidir.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch05.code.instability" />
+
+- **PCA:** diaqonal sərhəddə xam əlamətlərlə ağac 18 yarpaqla 95.0% dəqiqlik verir. Fırladılmış əlamətlərdə isə cəmi **4 yarpaqla 99.0%** dəqiqlik alınır.
+- **Dispersiya:** eyni məlumatın beş fərqli alt-nümunəsində kök hədləri 0.08 ilə 0.49 arasında dəyişir. Yarpaq sayı 11 ilə 17 arasındadır. Müstəvinin 12.7%-ində ağaclar bir-biri ilə razılaşmır.
+
+</Section>
+
+<Section id="when-to-use">
+
+Bu məhdudiyyətlərə baxmayaraq, tək qərar ağacı bir çox hallarda yaxşı seçimdir:
+
+| Vəziyyət | Niyə ağac? |
+|---|---|
+| Qərarın **izahı** vacibdir (kredit, tibb, hüquq) | Kiçik ağac hər qərarı sadə qaydalarla izah edir |
+| Əlamətlər **müxtəlif miqyasda və tipdə** | Miqyaslama tələb etmir, kateqoriyaları da emal edir |
+| **Qeyri-xətti** əlaqələr və əlamətlərarası qarşılıqlı təsir var | Ağac onları avtomatik tutur |
+| Sürətli **baza model** lazımdır | Saniyələr içində öyrədilir |
+| Ən yüksək **dəqiqlik** tələb olunur | Burada tək ağac yox, **ansambl** (meşə, bustinq) seçin |
+
+Praktikada tək ağaclar daha çox izah və kəşf üçün istifadə olunur. Ən güclü nəticələr isə yüzlərlə ağacı birləşdirən ansambllardan gəlir. Bu, növbəti fəslin mövzusudur.
+
+</Section>
+
+<Section id="summary">
+
+- Ağaclar yalnız **oxlara paralel** sərhədlər qurur. Mail sərhəddə pilləkən yaranır. **PCA ilə fırlatma** kömək edir.
+- Ağacların **dispersiyası yüksəkdir**: kiçik məlumat dəyişikliyi böyük model dəyişikliyi yaradır.
+- **Çoxlu ağacın ortalaması**, yəni təsadüfi meşə, dispersiyanı kəskin azaldır (Fəsil 6).
+- Tək ağac **izah, sürət və baza model** üçün əladır. Maksimal dəqiqlik üçün ansambl seçin.
+
+Təbriklər! Fəsil 5-i tamamladınız. Bilikləri yoxlamaq üçün [Fəsil 5-in yekun testini](/exercises/ch05.quiz.final) həll edin.
+
+</Section>

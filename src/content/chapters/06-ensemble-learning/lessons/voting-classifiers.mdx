@@ -1,0 +1,65 @@
+<Section id="wisdom">
+
+Mürəkkəb bir suala minlərlə təsadüfi insanın cavabını toplasanız, onların **ümumi** cavabı çox vaxt bir mütəxəssisin cavabından yaxşı olur. Bu fenomen *kütlənin müdrikliyi* adlanır. Eyni ideya ML-də də işləyir: bir qrup modelin, yəni **ansamblın**, proqnozlarını birləşdirsək, çox vaxt ən yaxşı tək modeldən daha dəqiq nəticə alırıq. Bu yanaşma <Term id="ensemble-learning" full /> adlanır.
+
+<Media id="ch06.media.ensemble-types" />
+
+Ən sadə ansambl belədir: bir neçə **fərqli** təsnifatçı öyrədilir (logistik reqressiya, k-NN, SVM, təsadüfi meşə), sonra hər yeni nümunə üçün onların cavabları səsverməyə qoyulur. Hətta hər təsnifatçı <Term id="weak-learner" full /> olsa belə, yəni təsadüfi təxmindən cəmi bir az yaxşı işləsə belə, ansambl güclü ola bilər. Lakin bir şərt var: təsnifatçılar **kifayət qədər çox və müxtəlif** olmalıdır.
+
+</Section>
+
+<Section id="law-of-large-numbers">
+
+Bunun niyə işlədiyini qeyri-bərabər pulla izah etmək olar. Tutaq ki, pul 51% ehtimalla “gerb”, 49% ehtimalla “yazı” düşür. 1 000 atışda gerblərin çoxluqda olma ehtimalı ~73%-dir, 10 000 atışda isə ~97%-dir. Bu, *böyük ədədlər qanunudur*: atışlar çoxaldıqca gerblərin payı 51%-ə yaxınlaşır və həmişə 50%-dən yuxarıda qalır.
+
+Hər biri $p$ ehtimalla düzgün cavab verən $n$ **müstəqil** təsnifatçının səs çoxluğunun düzgün olma ehtimalı binomial paylanmadan hesablanır:
+
+$$
+P(\text{ansambl}) = \sum_{k > n/2} \binom{n}{k} p^{k} (1-p)^{n-k}
+$$
+
+$p = 0.51$ olduqda: $n = 1$ üçün 51%, $n = 1\,001$ üçün ~73.7%, $n = 10\,001$ üçün isə ~97.7%.
+
+**Böyük “amma”.** Bu hesablama təsnifatçıların **müstəqil** səhv etdiyini fərz edir. Real ansambllarda modellər çox vaxt eyni məlumatda öyrədilir və **eyni növ səhvlər** edir. Səhvlər korrelyasiyalı olduqda qazanc kəskin azalır.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada hər təsnifatçının dəqiqliyini, onların sayını və səhvlər arasındakı korrelyasiyanı dəyişin.
+
+<Demo id="voting-wisdom" />
+
+Korrelyasiya 0 olduqda 55%-lik təsnifatçılardan ibarət 1 001 nəfərlik ansambl demək olar ki, səhvsizdir. Korrelyasiyanı 0.5-ə qaldırın: təsnifatçıların yarısı hər dəfə “eyni fikirdədir” və ansamblın dəqiqliyi tək təsnifatçının səviyyəsinə yaxınlaşır. Nəticə aydındır: **ansamblın dəyəri müxtəliflikdədir**. Bunun üçün çox fərqli alqoritmlər seçin və ya eyni alqoritmi fərqli məlumat alt-çoxluqlarında öyrədin. İkinci yol növbəti dərsin mövzusudur.
+
+</Section>
+
+<Section id="hard-soft">
+
+İki səsvermə növü var:
+
+- **<Term id="hard-voting" full />:** hər təsnifatçı bir sinif deyir, ən çox səs alan sinif qalib gəlir.
+- **<Term id="soft-voting" full />:** təsnifatçıların sinif **ehtimalları** ortalanır və ən yüksək orta ehtimallı sinif seçilir.
+
+Yumşaq səsvermə adətən daha yaxşıdır, çünki **əmin** proqnozlara daha çox çəki verir. Məsələn, iki model 51% ehtimalla “A” deyir, üçüncü isə 99% ehtimalla “B” deyir. Sərt səsvermədə A qalib gəlir. Yumşaq səsvermədə isə orta ehtimallar hesablanır: A üçün $(0.51 + 0.51 + 0.01)/3 \approx 0.34$, B üçün $\approx 0.66$, yəni B qalib gəlir. Bunun üçün bütün modellərdə `predict_proba()` olmalıdır. `SVC` üçün `probability=True` lazımdır.
+
+</Section>
+
+<Section id="python">
+
+Dörd fərqli modelin sərt və yumşaq səsverməsi 2 000 nöqtəlik “aylar” məlumatında:
+
+<PythonExample id="ch06.code.voting" />
+
+Nəticə dürüst və ibrətamizdir: yumşaq səsvermə (0.918) ən yaxşı tək modeli (SVC, 0.917) cəmi **0.1 faiz bəndi** üstələyir. Sərt səsvermə (0.915) isə bir az geridə qalır. Səbəb budur: dörd model eyni məlumatda öyrədilib və “çətin” nöqtələrin çoxunda eyni səhvi edir. Qazancı artırmaq üçün daha müxtəlif modellər lazımdır.
+
+</Section>
+
+<Section id="summary">
+
+- **Ansambl** bir neçə modelin proqnozlarını birləşdirir və çox vaxt ən yaxşı tək modeldən yaxşıdır.
+- Müstəqil zəif təsnifatçıların səs çoxluğu güclüdür (**böyük ədədlər qanunu**). Lakin **korrelyasiyalı səhvlər** qazancı yox edir.
+- **Sərt səsvermə** sinifləri sayır, **yumşaq səsvermə** ehtimalları ortalayır və adətən daha yaxşıdır.
+- Ansamblın gücü **müxtəliflikdən** gəlir.
+
+</Section>

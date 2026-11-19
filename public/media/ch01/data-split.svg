@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" font-family="Inter, system-ui, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">Təlim, validasiya və test dəstləri</title>
+  <desc id="d">Məlumat 70% təlim, 15% validasiya və 15% test hissələrinə bölünür. Aşağıda 5 qatlı çarpaz validasiyada hər turda fərqli hissənin validasiya kimi istifadəsi göstərilir.</desc>
+  <rect width="960" height="380" rx="20" fill="#ffffff"/>
+  <text x="40" y="50" font-size="18" font-weight="700" fill="#0f172a">Sadə bölgü (holdout)</text>
+  <rect x="40" y="70" width="616" height="56" rx="10" fill="#6366f1"/>
+  <text x="348" y="104" text-anchor="middle" font-size="16" fill="#fff" font-weight="600">Təlim ≈ 70%</text>
+  <rect x="660" y="70" width="128" height="56" rx="10" fill="#f59e0b"/>
+  <text x="724" y="104" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">Validasiya</text>
+  <rect x="792" y="70" width="128" height="56" rx="10" fill="#0f172a"/>
+  <text x="856" y="104" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">Test 🔒</text>
+  <text x="40" y="186" font-size="18" font-weight="700" fill="#0f172a">5 qatlı çarpaz validasiya (test dəsti ayrıca saxlanılır)</text>
+  <g font-size="12" fill="#475569">
+    <text x="40" y="222">Tur 1</text><text x="40" y="254">Tur 2</text><text x="40" y="286">Tur 3</text><text x="40" y="318">Tur 4</text><text x="40" y="350">Tur 5</text>
+  </g>
+  <g>
+    <!-- row template: 5 folds of width 140 starting x=100, gap 4 -->
+    <g transform="translate(0,206)">
+      <rect x="100" width="140" height="22" rx="5" fill="#f59e0b"/><rect x="244" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="388" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="532" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="676" width="140" height="22" rx="5" fill="#c7d2fe"/>
+    </g>
+    <g transform="translate(0,238)">
+      <rect x="100" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="244" width="140" height="22" rx="5" fill="#f59e0b"/><rect x="388" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="532" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="676" width="140" height="22" rx="5" fill="#c7d2fe"/>
+    </g>
+    <g transform="translate(0,270)">
+      <rect x="100" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="244" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="388" width="140" height="22" rx="5" fill="#f59e0b"/><rect x="532" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="676" width="140" height="22" rx="5" fill="#c7d2fe"/>
+    </g>
+    <g transform="translate(0,302)">
+      <rect x="100" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="244" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="388" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="532" width="140" height="22" rx="5" fill="#f59e0b"/><rect x="676" width="140" height="22" rx="5" fill="#c7d2fe"/>
+    </g>
+    <g transform="translate(0,334)">
+      <rect x="100" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="244" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="388" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="532" width="140" height="22" rx="5" fill="#c7d2fe"/><rect x="676" width="140" height="22" rx="5" fill="#f59e0b"/>
+    </g>
+  </g>
+  <rect x="838" y="214" width="14" height="14" rx="3" fill="#c7d2fe"/><text x="858" y="226" font-size="12" fill="#475569">təlim</text>
+  <rect x="838" y="240" width="14" height="14" rx="3" fill="#f59e0b"/><text x="858" y="252" font-size="12" fill="#475569">validasiya</text>
+  <text x="838" y="290" font-size="12" fill="#475569">Nəticə =</text>
+  <text x="838" y="308" font-size="12" fill="#475569">5 turun ortası</text>
+</svg>

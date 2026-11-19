@@ -1,0 +1,136 @@
+<Section id="generalization">
+
+ML-in əsl məqsədi təlim nümunələrini əzbərləmək deyil, **əvvəllər görmədiyi** nümunələr üçün də düzgün proqnoz verməkdir. Bu qabiliyyət *ümumiləşdirmə* (generalization) adlanır.
+
+Sistemləri təsnif etməyin üçüncü meyarı məhz ümumiləşdirmənin necə baş verməsidir. İki əsas strategiya var. Hər ikisini eyni misal üzərində görəcəyik: **mənzilin sahəsinə görə qiymətinin proqnozu**.
+
+</Section>
+
+<Section id="instance-based">
+
+<Term id="instance-based-learning" full />də sistem nümunələri sadəcə yadda saxlayır. Yeni hal gəldikdə onu **oxşarlıq ölçüsü** ilə saxlanılan nümunələrlə müqayisə edir və ən oxşarlarına əsasən qərar verir.
+
+Ən məşhur nümunə <Term id="k-nearest-neighbors" full /> alqoritmidir. 100 m²-lik mənzilin qiymətini bilmək istəyiriksə:
+
+1. Təlim dəstində sahəsi 100 m²-ə ən yaxın olan **k** mənzili tapırıq.
+2. Onların qiymətlərinin ortasını götürürük.
+
+Bu yanaşma qəlizdir? Əksinə, çox intuitivdir: əmlak agenti də tam belə düşünür, “bu ərazidə oxşar mənzillər neçəyə satılıb?”.
+
+</Section>
+
+<Section id="model-based">
+
+<Term id="model-based-learning" full />də isə nümunələrdən **ümumi model** qurulur və proqnozlar bu modelə əsasən verilir.
+
+Məlumata baxdıqda qiymətin sahə ilə təxminən düz xətt üzrə artdığını görürük. Ona görə də <Term id="linear-regression" full /> modeli seçirik:
+
+$$
+\hat{y} = \theta_0 + \theta_1 x
+$$
+
+Burada $x$ mənzilin sahəsi, $\hat{y}$ isə proqnozlaşdırılan qiymətdir.
+
+Burada $\theta_0$ (kəsişmə) və $\theta_1$ (meyl) — <Term id="model-parameter" full />ləridir. Onların qiymətini dəyişməklə istənilən düz xətti almaq olar. Öyrənmə prosesi **məlumata ən yaxşı uyğun gələn** $\theta_0, \theta_1$ qiymətlərini tapmaqdan ibarətdir.
+
+Bu yanaşmada tipik iş axını belədir:
+
+1. Məlumatı öyrənirik və **model seçirik** (burada xətti model).
+2. Modeli təlim məlumatı ilə **öyrədirik**. Alqoritm parametrləri tapır.
+3. Yeni hallar üçün **proqnoz** veririk. Buna *inference* deyilir.
+
+</Section>
+
+<Section id="cost-function">
+
+“Ən yaxşı uyğun gəlir” ifadəsini riyazi dildə necə ifadə edək? Bunun üçün <Term id="cost-function" full /> təyin edirik. O, modelin nə qədər **pis** olduğunu ölçür. Reqressiyada ən geniş yayılmış seçim orta kvadrat xətadır (MSE):
+
+$$
+J(\theta_0, \theta_1) = \frac{1}{m} \sum_{i=1}^{m} \left( \theta_0 + \theta_1 x^{(i)} - y^{(i)} \right)^2
+$$
+
+- $m$ — təlim nümunələrinin sayı;
+- $x^{(i)}, y^{(i)}$ — $i$-ci mənzilin sahəsi və həqiqi qiyməti;
+- mötərizədəki ifadə — proqnozla həqiqət arasındakı fərq (qalıq).
+
+Fərqi kvadrata yüksəltməklə həm mənfi və müsbət xətaların bir-birini “yeməsinin” qarşısını alırıq, həm də böyük xətaları daha çox cəzalandırırıq. Xətti reqressiya üçün $J$-ni minimallaşdıran parametrlərin dəqiq düsturu var:
+
+$$
+\theta_1 = \frac{\sum_i (x^{(i)} - \bar{x})(y^{(i)} - \bar{y})}{\sum_i (x^{(i)} - \bar{x})^2}, \qquad \theta_0 = \bar{y} - \theta_1 \bar{x}
+$$
+
+<Callout variant="info">
+k-NN-in parametrləri yoxdur, lakin **k** var. k təlimdən əvvəl seçilən <Term id="hyperparameter" full />dir. Onu məlumatdan deyil, validasiya ilə seçirik (bu fəslin son dərsi).
+</Callout>
+
+</Section>
+
+<Section id="simulation">
+
+İndi hər iki yanaşmanı yan-yana müqayisə edin. Yeni mənzilin sahəsini dəyişin, k-nı artırıb azaldın:
+
+<Demo id="model-vs-instance" />
+
+Müşahidə ediləcəklər:
+
+- Xətti model **hamar** və ekstrapolyasiyaya qadirdir. Təlim aralığından kənarda da ağlabatan proqnoz verir.
+- k-NN-in proqnoz əyrisi **pilləlidir**. k = 1 olduqda hər küylü nöqtəni təkrarlayır, böyük k-da isə “düzləşir”.
+- k = 1 üçün təlim xətası çox aşağıdır, lakin bu, modelin yaxşı olduğunu **göstərmir**. Niyə? (İpucu: hər nöqtənin ən yaxın qonşusu özüdür.)
+
+</Section>
+
+<Section id="worked-example">
+
+Üç mənzil üzərində xətti reqressiyanı əl ilə hesablayaq:
+
+| Sahə $x$ (m²) | Qiymət $y$ (min ₼) |
+|---|---|
+| 60 | 110 |
+| 90 | 150 |
+| 120 | 200 |
+
+**1. Orta qiymətlər:** $\bar{x} = 90$, $\bar{y} = 153.\overline{3}$.
+
+**2. Fərqlər:** $x - \bar{x} = (-30,\ 0,\ 30)$ və $y - \bar{y} \approx (-43.3,\ -3.3,\ 46.7)$.
+
+**3. Meyl:**
+
+$$
+\theta_1 = \frac{(-30)(-43.3) + 0 + (30)(46.7)}{900 + 0 + 900} = \frac{2700}{1800} = 1.5
+$$
+
+**4. Kəsişmə:** $\theta_0 = 153.3 - 1.5 \times 90 = 18.3$.
+
+**5. Proqnoz** (100 m²): $18.3 + 1.5 \times 100 \approx 168$ min ₼.
+
+Müqayisə üçün 2-NN proqnozu: 100 m²-ə ən yaxın iki mənzil 90 m² (150) və 120 m²-dir (200). Proqnoz: $(150 + 200)/2 = 175$ min ₼.
+
+<Callout variant="tip">
+Modelin $\theta_1 = 1.5$ parametri həm də şərh oluna bilər: **hər əlavə kvadrat metr qiyməti orta hesabla 1 500 ₼ artırır**. Model əsaslı yanaşmanın bu şəffaflığı praktikada çox dəyərlidir.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+Scikit-Learn-də hər iki yanaşma eyni interfeysə malikdir: `fit()` ilə öyrədirik, `predict()` ilə proqnoz veririk. Modeli dəyişmək üçün cəmi bir sətri dəyişmək kifayətdir:
+
+<PythonExample id="ch01.code.first-model" />
+
+<Callout variant="warning" title="Tipik səhv: X-in forması">
+Scikit-Learn `X`-in **iki ölçülü** (nümunələr × əlamətlər) olmasını gözləyir. Bir əlamət olduqda belə `area.reshape(-1, 1)` yazmaq lazımdır, əks halda xəta alınır.
+</Callout>
+
+</Section>
+
+<Section id="summary">
+
+| | Nümunə əsaslı (k-NN) | Model əsaslı (xətti reqressiya) |
+|---|---|---|
+| Təlim | Nümunələri yadda saxlamaq | Parametrləri tapmaq ($\theta_0, \theta_1$) |
+| Proqnoz | Ən oxşar nümunələrə əsasən | Model düsturu ilə |
+| Yaddaş | Bütün təlim məlumatı | Bir neçə parametr |
+| Fərziyyə | “Oxşar girişlər oxşar çıxış verir” | Məlumatın forması haqqında (məs. xətti) |
+| Tənzimləmə | k (hiperparametr) | Model seçimi, requlyarlaşdırma |
+
+</Section>

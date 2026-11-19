@@ -1,0 +1,99 @@
+<Section id="idea">
+
+Təsəvvür edin ki, qatı duman içində dağda azmısınız və vadiyə enmək istəyirsiniz. Ayağınızın altındakı yamacı hiss edirsiniz. Ağlabatan strategiya belədir: **ən dik eniş istiqamətində bir addım atın**, sonra yenidən yoxlayın və təkrarlayın. Yer düzləşəndə, yəni yamac sıfır olanda, vadinin dibindəsiniz.
+
+<Term id="gradient-descent" full /> məhz bunu edir:
+
+1. $\boldsymbol{\theta}$ təsadüfi qiymətlərlə başlayır (*təsadüfi inisializasiya*).
+2. Hər addımda xərc funksiyasının <b>qradiyenti</b>, yəni ən dik artım istiqaməti hesablanır.
+3. $\boldsymbol{\theta}$ qradiyentin **əksinə** kiçik addım atır.
+4. Xərc daha azalmayana qədər təkrarlanır, yəni alqoritm *yığılır*.
+
+$$
+\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta\,\nabla_{\boldsymbol{\theta}}\,\text{MSE}(\boldsymbol{\theta})
+$$
+
+</Section>
+
+<Section id="learning-rate">
+
+Addımın ölçüsünü <Term id="learning-rate" full /> $\eta$ təyin edir. Bu, ən vacib hiperparametrdir:
+
+<Media id="ch04.media.learning-rate" />
+
+- **η çox kiçikdir:** alqoritm minimuma doğru düzgün gedir, lakin çoxlu addım tələb edir.
+- **η uyğundur:** bir neçə addımda minimuma çatır.
+- **η çox böyükdür:** addım minimumdan o tərəfə “atlayır”, hər dəfə daha yuxarıya düşür və alqoritm **uzaqlaşır** (diverge edir).
+
+</Section>
+
+<Section id="convexity">
+
+Real xərc funksiyaları həmişə hamar çanaq deyil. Onlarda **yerli minimumlar** (kiçik çuxurlar) və **platolar** (düz ərazilər) ola bilər. Belə halda qradiyent enmə başladığı yerdən asılı olaraq qlobal minimumu tapmaya bilər.
+
+Xətti reqressiya üçün xəbər yaxşıdır: MSE <Term id="convex-function" full />dır. Qrafikdəki istənilən iki nöqtəni birləşdirən düz xətt qrafikdən aşağı düşmür. Belə funksiyada yerli minimum yoxdur, yalnız bir qlobal minimum var. Funksiya həm də hamardır: yamac kəskin dəyişmir. Ona görə də kifayət qədər kiçik $\eta$ ilə qradiyent enmə qlobal minimuma istənilən qədər yaxınlaşır.
+
+Lakin çanağın **forması** vacibdir. Əlamətlərin miqyası çox fərqli olduqda çanaq dar və uzunsov olur:
+
+- dik istiqamətdə böyük $\eta$ uzaqlaşmaya səbəb olur;
+- uzun, yastı istiqamətdə kiçik $\eta$ ilə irəliləyiş çox yavaşdır.
+
+Əlamətləri <Term id="feature-scaling" /> ilə eyni miqyasa gətirdikdə (məs. `StandardScaler`) çanaq dəyirmiləşir və qradiyent enmə birbaşa mərkəzə gedir.
+
+<Callout variant="warning">
+Qradiyent enmədən istifadə edərkən **əlamətləri mütləq miqyaslayın**. Əks halda təlim çox uzun çəkə və ya heç yığılmaya bilər.
+</Callout>
+
+</Section>
+
+<Section id="batch-gradient">
+
+<Term id="batch-gradient-descent" full />də qradiyent hər addımda **bütün** təlim dəsti üzərində hesablanır. Normal tənlik dərsindən bildiyimiz kimi:
+
+$$
+\nabla_{\boldsymbol{\theta}}\,\text{MSE}(\boldsymbol{\theta}) = \frac{2}{m}\,\mathbf{X}_b^{\intercal}\left(\mathbf{X}_b\boldsymbol{\theta} - \mathbf{y}\right)
+$$
+
+Hər komponent bir parametrin xüsusi törəməsidir: $\theta_j$ bir az dəyişsə, xərc nə qədər dəyişər?
+
+$$
+\frac{\partial}{\partial \theta_j}\text{MSE}(\boldsymbol{\theta}) = \frac{2}{m}\sum_{i=1}^{m}\left(\boldsymbol{\theta}^{\intercal}\mathbf{x}^{(i)} - y^{(i)}\right)x_j^{(i)}
+$$
+
+Mənası intuitivdir: **xəta** (proqnoz − həqiqət) böyükdürsə və **əlamət** $x_j$ həmin nümunədə böyükdürsə, $\theta_j$ çox dəyişməlidir.
+
+Bütün məlumat hər addımda iştirak etdiyi üçün paket GD böyük dəstlərdə yavaşdır. Lakin əlamət sayına görə yaxşı miqyaslanır: yüz minlərlə əlamət olduqda normal tənlikdən xeyli sürətlidir.
+
+**Nə vaxt dayanmalı?** Çoxlu iterasiya təyin edib qradiyentin norması çox kiçik olduqda (məs. $\varepsilon$-dan kiçik) dayandırmaq olar. Bu, minimuma demək olar ki, çatdığımızı bildirir.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada rəng xərc funksiyasının qiymətini göstərir: tünd yerlər aşağı xərcdir. × isə normal tənliyin həllidir. Qırmızı yol qradiyent enmənin addımlarıdır.
+
+<Demo id="gradient-descent" />
+
+Əvvəlcə miqyaslanmamış əlamətlə ($x$: 0–10) işləyin. Çanaq dar, uzun və maili bir dərədir. $\eta \approx 0.03$-dən yuxarı alqoritm uzaqlaşır. Ən yaxşı dayanıqlı $\eta$ ilə belə 200 addım minimuma çatmağa kifayət etmir. Sonra əlaməti standartlaşdırın: çanaq dəyirmi olur və $\eta = 0.1$–$0.6$ ilə alqoritm cəmi bir neçə onlarla addımda minimuma çatır.
+
+</Section>
+
+<Section id="python">
+
+Paket qradiyent enməni sıfırdan yazırıq. Skript üç öyrənmə sürətini, sonra miqyaslanmamış və standartlaşdırılmış əlamətləri müqayisə edir:
+
+<PythonExample id="ch04.code.batch-gd" />
+
+- $\eta = 0.02$ və $0.1$ normal tənliklə eyni həllə gəlir: $[3.004, 1.754]$. $\eta = 0.5$ isə 725 epoxadan sonra sonsuzluğa “qaçır”.
+- Bir əlaməti 0–1000 aralığında olan məlumatda dayanıqlı olmaq üçün $\eta = 10^{-6}$ qədər kiçik olmalıdır. 1000 epoxadan sonra MSE hələ də 10.3-dür. Standartlaşdırmadan sonra $\eta = 0.1$ ilə MSE **0.20**-yə enir.
+
+</Section>
+
+<Section id="summary">
+
+- **Qradiyent enmə:** $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta\nabla J(\boldsymbol{\theta})$, yəni ən dik eniş istiqamətində addımlar.
+- **Öyrənmə sürəti:** kiçik η yavaşdır, böyük η uzaqlaşır.
+- MSE **qabarıqdır**, ona görə qlobal minimum tapılır. Amma **miqyaslama** olmadan çanaq dar dərəyə çevrilir.
+- **Paket GD:** hər addımda bütün məlumat iştirak edir. Dəqiqdir, lakin böyük dəstlərdə yavaşdır.
+
+</Section>

@@ -1,0 +1,79 @@
+<Section id="supervised">
+
+ML sistemlərini ilk növbədə təlim zamanı aldıqları **“nəzarətin”**, yəni düzgün cavab haqqında məlumatın miqdarına görə ayırırlar.
+
+<Term id="supervised-learning" full />də hər təlim nümunəsi düzgün cavabla birlikdə verilir. Bu cavab <Term id="label" full /> adlanır. Bunu müəllimin hər tapşırığın cavabını göstərdiyi dərsə bənzətmək olar.
+
+İki klassik nəzarətli tapşırıq var:
+
+- **Təsnifat:** etiket sinifdir. Məsələn, məktub üçün “spam” və ya “normal”.
+- **Reqressiya:** etiket ədəddir. Məsələn, mənzil üçün “145 min ₼”.
+
+Modelin girişləri isə <Term id="feature" full />lərdir: mənzilin sahəsi, otaq sayı, mərtəbəsi, rayonu və s.
+
+<Callout variant="info">
+Bəzi alqoritmlər hər iki tapşırıq üçün istifadə olunur. Məsələn, logistik reqressiya adında “reqressiya” sözü olsa da, ehtimal hesablayaraq təsnifat aparır (Fəsil 4).
+</Callout>
+
+</Section>
+
+<Section id="unsupervised">
+
+<Term id="unsupervised-learning" full />də etiket yoxdur: sistem yalnız girişləri görür və strukturu özü kəşf etməlidir.
+
+- **Klasterləşdirmə:** oxşar nümunələri qruplaşdırmaq. Məsələn, sayt ziyarətçilərini davranışlarına görə qruplara ayırmaq, halbuki bu qrupların nə olduğunu əvvəlcədən bilmirik.
+- **Vizuallaşdırma və ölçünün azaldılması:** yüzlərlə əlaməti 2–3 ölçüyə salıb məlumatın “xəritəsini” görmək.
+- **Anomaliya və yenilik aşkarlanması:** normal nümunələrdən öyrənib qeyri-adi olanı tutmaq.
+- **Assosiasiya qaydaları:** “bunu alan, onu da alır” tipli əlaqələri tapmaq.
+
+</Section>
+
+<Section id="simulation">
+
+Aşağıdakı simulyasiyada **eyni nöqtələr** iki fərqli rejimdə göstərilir. Nəzarətli rejimdə rənglər (etiketlər) məlumdur və model onlardan öyrənir. Nəzarətsiz rejimdə alqoritm rəngləri görmür və qrupları özü tapmalıdır.
+
+<Demo id="supervision-types" />
+
+Simulyasiyadan sonra özünüzə bu sualları verin:
+
+1. k-means-in tapdığı klasterlər həqiqi siniflərlə üst-üstə düşdümü? Klasterlərin rəngləri niyə siniflərin rəngləri ilə eyni olmaya bilər?
+2. k = 2 və ya k = 4 seçdikdə nə baş verir? Etiket olmadan “düzgün” k-nı necə bilərdik?
+3. Nəzarətli rejimdə siniflərin sərhədinə yaxın nöqtələr niyə ən çətin haldır?
+
+</Section>
+
+<Section id="semi-self">
+
+Etiketləmək çox vaxt bahalı və yavaşdır: bir radioloqun minlərlə rentgen şəklini işarələməsi aylarla vaxt aparır. Ona görə də aralıq yanaşmalar geniş yayılıb.
+
+<Term id="semi-supervised-learning" full />: az sayda etiketli və çoxlu etiketsiz nümunə birlikdə istifadə olunur. Məsələn, foto tətbiqi əvvəlcə üzləri nəzarətsiz şəkildə qruplaşdırır (“bu 40 şəkildə eyni adam var”). Siz qrupa bir dəfə ad verdikdə, ad bütün qrupa yayılır.
+
+<Term id="self-supervised-learning" full />: etiketlər məlumatın özündən yaradılır. Cümlədən bir söz gizlədilir və model onu proqnozlaşdırmağı öyrənir. Şəklin bir hissəsi örtülür və model onu bərpa etməyə çalışır. Müasir böyük dil modelləri məhz bu yolla, milyardlarla etiketsiz mətn üzərində öncədən öyrədilir. Sonra az sayda etiketli nümunə ilə konkret tapşırığa uyğunlaşdırılır.
+
+<Callout variant="insight">
+Öz-özünə nəzarətli öyrənmədə ayrıca etiket toplanmır, lakin təlim zamanı modelə yenə də “düzgün cavab” verilir. Ona görə də texniki baxımdan o, nəzarətli öyrənməyə daha yaxındır.
+</Callout>
+
+</Section>
+
+<Section id="reinforcement">
+
+<Term id="reinforcement-learning" full /> tamamilə fərqli quruluşa malikdir. Burada öyrənən sistem **agent** adlanır. O, **mühiti** müşahidə edir, **hərəkət** seçir və bunun nəticəsində **mükafat** (və ya cərimə) alır.
+
+Agentə heç kim “bu vəziyyətdə sola dön” demir. O, sınaq-səhv yolu ilə zaman ərzində ümumi mükafatı maksimuma çatdıran strategiyanı, yəni **siyasəti** (policy) öyrənir.
+
+Nümunələr: robotun yerimə öyrənməsi, anbarda optimal marşrut, stolüstü oyunlarda insan çempionlarını məğlub edən sistemlər. Dil modellərinin insan rəyinə əsasən incə tənzimlənməsi də buraya aiddir.
+
+</Section>
+
+<Section id="summary">
+
+| Növ | Təlim məlumatı | Tipik tapşırıqlar |
+|---|---|---|
+| Nəzarətli | Giriş + etiket | Təsnifat, reqressiya |
+| Nəzarətsiz | Yalnız giriş | Klasterləşdirmə, ölçünün azaldılması, anomaliyalar |
+| Yarı-nəzarətli | Az etiketli + çox etiketsiz | Etiketin baha olduğu hallar |
+| Öz-özünə nəzarətli | Etiketsiz → avtomatik etiket | Böyük modellərin ön təlimi |
+| Gücləndirməli | Mühitdən mükafat siqnalı | Ardıcıl qərar qəbulu, idarəetmə |
+
+</Section>

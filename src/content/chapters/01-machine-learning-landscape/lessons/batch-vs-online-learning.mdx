@@ -1,0 +1,91 @@
+<Section id="batch">
+
+ML sistemlərini təsnif etməyin ikinci meyarı belədir: sistem yeni məlumat gəldikcə **addım-addım öyrənə bilirmi**?
+
+<Term id="batch-learning" full />də model bütün mövcud məlumatla bir dəfəyə öyrədilir, sonra istifadəyə verilir və artıq öyrənmir. Bu, *oflayn öyrənmə* də adlanır.
+
+<Media id="ch01.media.ml-pipeline" />
+
+Yeni məlumatı nəzərə almaq üçün modeli **köhnə və yeni məlumatın hamısı ilə sıfırdan** yenidən öyrətmək və köhnə modeli əvəz etmək lazımdır. Bu proses avtomatlaşdırıla bilər (məsələn, hər gecə və ya hər həftə), lakin:
+
+- Böyük məlumatda təlim saatlarla və ya günlərlə çəkir. Hesablama resursları da baha başa gəlir.
+- Model iki yeniləmə arasında köhnəlir. Dünya dəyişdikcə performansı tədricən düşür. Bu hal <Term id="concept-drift" full /> adlanır.
+
+</Section>
+
+<Section id="online">
+
+<Term id="online-learning" full />də model ardıcıl gələn məlumatla, ya tək-tək nümunələrlə, ya da *mini-paket* (mini-batch) adlanan kiçik qruplarla yenilənir. Hər addım sürətli və ucuzdur, ona görə də sistem yeni məlumata demək olar ki, dərhal uyğunlaşır.
+
+Onlayn öyrənmə xüsusilə faydalıdır:
+
+- Məlumat **fasiləsiz axın** şəklində gəldikdə (birja qiymətləri, sensor ölçmələri, klik axınları);
+- Resurslar məhduddursa (mobil cihaz, IoT). Öyrənilmiş nümunələri saxlamağa ehtiyac yoxdur;
+- Məlumat **yaddaşa sığmayacaq qədər böyük** olduqda. Onu hissə-hissə oxuyub hər hissə ilə modeli yeniləmək olar. Bu üsul *out-of-core* öyrənmə adlanır və oflayn rejimdə də işlədilir.
+
+</Section>
+
+<Section id="update-rule">
+
+Onlayn öyrənmənin ürəyində sadə bir yeniləmə qaydası dayanır. Xətti model üçün proqnoz belədir:
+
+$$
+\hat{y} = \theta_0 + \theta_1 x
+$$
+
+Yeni nümunə $(x, y)$ gəldikdə xətanı hesablayırıq: $e = \hat{y} - y$. Sonra parametrləri xətanı azaldan istiqamətdə bir az dəyişirik. Bu, **stoxastik qradiyent enmə** (SGD) adlanır:
+
+$$
+\theta_0 \leftarrow \theta_0 - \eta \, e, \qquad \theta_1 \leftarrow \theta_1 - \eta \, e \, x
+$$
+
+Burada $\eta$ (eta) — <Term id="learning-rate" full />dir. O, hər yeniləmənin “addım uzunluğunu” müəyyən edir:
+
+- **Böyük $\eta$:** model yeni məlumata tez uyğunlaşır, lakin köhnə biliyi də tez unudur və küyə həssas olur. Çox böyük $\eta$ parametrlərin yığılmamasına, hətta “partlamasına” səbəb olur.
+- **Kiçik $\eta$:** öyrənmə sabit, lakin yavaş olur. Model dəyişikliyə gec reaksiya verir.
+
+<Callout variant="info" title="Qradiyent haqqında">
+$e \cdot x$ ifadəsi kvadrat xətanın $\theta_1$-ə görə törəməsindən (qradiyentindən) gəlir. Qradiyent enmənin riyaziyyatını Fəsil 4-də ətraflı öyrənəcəyik. Hələlik intuisiya kifayətdir: **xəta böyükdürsə, böyük düzəliş edirik**.
+</Callout>
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada nöqtələr bir-bir gəlir. Model hər nümunədən sonra yuxarıdakı qayda ilə bir addım yenilənir. Aşağıdakı xəta qrafiki proqnozun dəqiqliyinin zamanla necə dəyişdiyini göstərir.
+
+<Demo id="online-learning" />
+
+Eksperimentlər:
+
+1. $\eta = 0.02$ və $\eta = 1.2$ ilə 60 nümunə işlədin. Hansı halda xətt daha “əsəbi” hərəkət edir?
+2. “Konsept sürüşməsi”ni aktivləşdirin. 60-cı nümunədən sonra xəta qrafikində nə görürsünüz? Model nə qədər tez bərpa olunur?
+3. Böyük və kiçik $\eta$ arasında hansı **kompromis** var?
+
+</Section>
+
+<Section id="python">
+
+Scikit-Learn-də bir çox model onlayn öyrənməni `partial_fit()` metodu ilə dəstəkləyir. Aşağıdakı nümunədə model 50 mini-paketlə addım-addım öyrənir və parametrləri həqiqi qiymətlərə yaxınlaşır:
+
+<PythonExample id="ch01.code.online-sgd" />
+
+</Section>
+
+<Section id="risks">
+
+- **Pis məlumat birbaşa modelə düşür.** Sensor nasaz olarsa və ya kimsə sistemi qəsdən manipulyasiya edərsə, onlayn model bunu dərhal öyrənir. Monitorinq qurun: performans kəskin düşdükdə öyrənməni dayandırın və ya əvvəlki versiyaya qayıdın.
+- **Anomal məlumatı süzməmək.** Axına daxil olan məlumatı yoxlayın: qeyri-adi qiymətləri öyrənmədən əvvəl ayırın.
+- **Öyrənmə sürətini “bir dəfə qurub unutmaq”.** Optimal $\eta$ məlumatdan asılıdır və validasiya ilə seçilməlidir.
+- **Köhnəlməni nəzərə almamaq.** Paket öyrənmədə də modelin performansını zamanla izləmək və vaxtaşırı yenidən öyrətmək lazımdır.
+
+</Section>
+
+<Section id="summary">
+
+- **Paket öyrənmə:** bütün məlumatla bir dəfə öyrənir. Yeniləmək üçün sıfırdan yenidən öyrətmək lazımdır.
+- **Onlayn öyrənmə:** məlumat gəldikcə kiçik addımlarla yenilənir. Axın və nəhəng məlumat üçün idealdır.
+- **Öyrənmə sürəti** $\eta$ uyğunlaşma sürəti ilə sabitlik arasında balans yaradır.
+- Hər iki rejimdə **monitorinq** vacibdir: konsept sürüşməsi və pis məlumat performansı aşağı salır.
+
+</Section>

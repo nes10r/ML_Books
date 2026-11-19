@@ -1,0 +1,107 @@
+<Section id="idea">
+
+<Term id="boosting" full /> zəif öyrənənləri güclü öyrənənə çevirən başqa bir ansambl yanaşmasıdır. Bagging-dən əsas fərqi budur: modellər **paralel deyil, ardıcıl** öyrədilir. **Hər yeni model əvvəlkilərin səhvlərini düzəltməyə çalışır.**
+
+İki ən məşhur bustinq üsulu **AdaBoost** və **qradiyent bustinqidir**. Fərq səhvlərin necə “göstərildiyindədir”: AdaBoost nümunələrin **çəkisini** dəyişir, qradiyent bustinqi isə **qalıqları** öyrədir.
+
+</Section>
+
+<Section id="adaboost">
+
+<Term id="adaboost" full /> belə işləyir:
+
+1. Bütün nümunələrə bərabər çəki verilir: $w^{(i)} = 1/m$.
+2. Birinci təsnifatçı öyrədilir, məsələn bir bölgülü ağac (*kötük*). Onun çəkili xəta dərəcəsi hesablanır:
+
+$$
+r_j = \frac{\sum_{i:\ \hat{y}_j^{(i)} \neq y^{(i)}} w^{(i)}}{\sum_{i} w^{(i)}}
+$$
+
+3. Təsnifatçının “sözünün çəkisi” hesablanır. Dəqiq təsnifatçı daha böyük çəki alır:
+
+$$
+\alpha_j = \eta \log\frac{1 - r_j}{r_j}
+$$
+
+4. **Səhv təsnif olunmuş** nümunələrin çəkisi $\exp(\alpha_j)$ dəfə artırılır, sonra çəkilər normallaşdırılır.
+5. Növbəti təsnifatçı yenilənmiş çəkilərlə öyrədilir. O, əvvəlki təsnifatçının çətinlik çəkdiyi nümunələrə daha çox diqqət yetirir.
+
+Proqnoz bütün təsnifatçıların $\alpha_j$ ilə çəkili səsverməsidir. Çoxsinifli halda Scikit-Learn bu alqoritmin **SAMME** adlanan versiyasından istifadə edir.
+
+</Section>
+
+<Section id="gradient-boosting">
+
+<Term id="gradient-boosting" full /> nümunə çəkiləri əvəzinə **qalıqlarla** işləyir. Reqressiya və kvadrat itki üçün ideya çox aydındır:
+
+1. Başlanğıc proqnoz sabitdir: hədəflərin ortası, $F_0(x) = \bar{y}$.
+2. Qalıqlar, yəni hələ izah olunmamış hissə, hesablanır: $r^{(i)} = y^{(i)} - F_{t-1}(x^{(i)})$.
+3. Kiçik reqressiya ağacı $h_t$ **bu qalıqlara** öyrədilir.
+4. Ansambl yenilənir:
+
+$$
+F_t(x) = F_{t-1}(x) + \eta \cdot h_t(x)
+$$
+
+5. 2–4-cü addımlar təkrarlanır.
+
+Kvadrat itki üçün qalıq itkinin **mənfi qradiyentidir**. Ad da buradan gəlir: hər ağac funksiya fəzasında qradiyent enmənin bir addımıdır. Digər itki funksiyaları üçün də, məsələn təsnifatda log itki üçün, eyni mexanizm işləyir.
+
+Öyrənmə sürəti $\eta$ hər ağacın töhfəsini azaldır. Bu, <Term id="shrinkage" full />dır. Kiçik $\eta$ ilə daha çox ağac lazımdır, lakin model adətən **daha yaxşı ümumiləşdirir**. Ağac sayını isə ən yaxşısı **erkən dayandırma** ilə seçmək olar: validasiya xətası artmağa başlayanda dayanmaq.
+
+</Section>
+
+<Section id="simulation">
+
+Gün ərzində temperatur məlumatında (Fəsil 5) qradiyent bustinqini addım-addım izləyin. Ortadakı qrafik cari ağacın öyrəndiyi qalıqları göstərir.
+
+<Demo id="gradient-boosting" />
+
+- **0 ağac:** proqnoz düz xəttdir, yəni ortadır. Qalıqlar bütün gündəlik dalğanı əks etdirir.
+- **1–3 ağac:** hər ağac qalıqların ən böyük “parçasını” tutur. Proqnoz sürətlə həqiqi əyriyə yaxınlaşır, qalıqlar isə kiçilir və təsadüfi küyə bənzəməyə başlayır.
+- **Çoxlu ağac:** təlim xətası azalmağa davam edir. Test xətası isə müəyyən nöqtədən sonra artır, bu da overfitting-dir. Yaşıl nöqtə ən yaxşı ağac sayını göstərir.
+- **η-nı azaldın:** ən yaxşı nöqtə sağa sürüşür, yəni daha çox ağac lazım olur. Nəticə isə adətən daha yaxşıdır.
+
+</Section>
+
+<Section id="hist">
+
+Böyük məlumat üçün Scikit-Learn-də daha sürətli versiya var: `HistGradientBoostingClassifier` və `HistGradientBoostingRegressor`.
+
+- Hər əlamət əvvəlcədən 255-ə qədər **qutuya** (histoqram) bölünür. Bölgü axtarışında yalnız qutuların sərhədləri yoxlanılır. Mürəkkəblik $O(b \times m)$ olur, adi bustinqdə isə $O(n \times m \log m)$-dir.
+- **Çatışmayan qiymətləri** və **kateqoriyalı əlamətləri** birbaşa emal edir.
+- Erkən dayandırma (`early_stopping="auto"`) 10 000-dən çox nümunə olduqda avtomatik aktivləşir.
+
+Yüz minlərlə nümunəli cədvəl məlumatında bu, demək olar ki, həmişə ən yaxşı başlanğıc seçimlərdən biridir. XGBoost, LightGBM və CatBoost kitabxanaları da eyni ideyaların optimallaşdırılmış versiyalarıdır.
+
+</Section>
+
+<Section id="python">
+
+Üç bustinq üsulu: kötüklərdən AdaBoost, temperaturda qradiyent bustinqi və rəqəmlərdə histoqram bustinqi:
+
+<PythonExample id="ch06.code.boosting" />
+
+- **AdaBoost** 0.808 dəqiqlikli kötüyü 200 kötüklü ansamblda **0.908**-ə qaldırır.
+- **GBR:** η = 1 və 3 ağac ilə RMSE 2.04-dür. η = 0.1 və 3 ağac ilə model hələ “isinməyib” və RMSE 4.70-dir. 100 ağacla isə **1.43** alınır. Bu, shrinkage-in klassik mənzərəsidir: kiçik η daha çox ağac tələb edir.
+- **Erkən dayandırma** η = 0.05 ilə 101 ağacdan sonra təlimi dayandırdı. Validasiya xətası 10 iterasiya ərzində yaxşılaşmadı.
+
+</Section>
+
+<Section id="mistakes">
+
+- **Çoxlu ağac + böyük η.** Bustinq overfit edə bilər. Həmişə erkən dayandırma və ya validasiya ilə ağac sayını seçin.
+- **Dərin ağaclar.** Bustinqdə adətən dayaz ağaclar (dərinlik 1–5) istifadə olunur. Hər ağac yalnız bir az düzəliş etməlidir.
+- **Bustinqi paralel gözləmək.** Ağaclar ardıcıl öyrədilir, ona görə də bagging kimi asan paralelləşmir.
+- **Küylü etiketlərdə AdaBoost.** AdaBoost səhv etiketli nümunələrin çəkisini sonsuz artırır və onlara “ilişə” bilər. Qradiyent bustinqi daha dayanıqlıdır.
+
+</Section>
+
+<Section id="summary">
+
+- **Bustinq:** modellər ardıcıl öyrədilir, hər biri əvvəlkilərin səhvlərini düzəldir.
+- **AdaBoost** səhv nümunələrin çəkisini artırır. **Qradiyent bustinqi** qalıqları, yəni itkinin mənfi qradiyentini, öyrədir.
+- **Shrinkage** (kiçik η) və **erkən dayandırma** əsas requlyarlaşdırma alətləridir.
+- Böyük cədvəl məlumatı üçün **HistGradientBoosting** sürətli və güclü seçimdir.
+
+</Section>

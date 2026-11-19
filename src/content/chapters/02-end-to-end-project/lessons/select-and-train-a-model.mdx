@@ -1,0 +1,78 @@
+<Section id="first-model">
+
+Problemi qoyduq, məlumatı araşdırdıq, test dəstini ayırdıq və hazırlıq pipeline-ı qurduq. İndi model seçmək asandır. Pipeline sayəsində bütün hazırlıq və model bir sətirdə birləşir:
+
+```python
+from sklearn.linear_model import LinearRegression
+
+lin_reg = make_pipeline(preprocessing, LinearRegression())
+lin_reg.fit(X_train, y_train)
+predictions = lin_reg.predict(X_train)
+```
+
+Xam məlumat (boşluqlar, mətn sütunları, yazı səhvləri ilə) birbaşa pipeline-a verilir. Hər şeyi o özü edir.
+
+Xətti reqressiyanın **təlim** RMSE-si təxminən **34 600 AZN**-dir. Mənzillərin median qiyməti ~144 000 AZN olduğunu nəzərə alsaq, tipik xəta qiymətin təxminən 24%-i qədərdir. Bu, əl ilə qiymətləndirmədən (~20%) yaxşı deyil. Təlim xətasının özü belə yüksəkdirsə, model məlumatı yaxşı tuta bilmir, yəni <Term id="underfitting" /> var.
+
+</Section>
+
+<Section id="three-models">
+
+Underfitting-in həlli daha güclü model sınamaqdır. Pipeline-da modeli dəyişmək üçün bir sözü dəyişmək kifayətdir. Üç modeli müqayisə edək:
+
+| Model | Təlim RMSE | 10 qatlı CV RMSE | Diaqnoz |
+|---|---|---|---|
+| Xətti reqressiya | 34 600 | 34 457 ± 7 436 | Underfitting: hər iki xəta yüksəkdir |
+| <Term id="decision-tree" full /> | **0** | 40 498 ± 7 481 | Ağır overfitting |
+| <Term id="random-forest" full /> | 11 296 | **30 569** ± 6 638 | Ən yaxşısı, lakin overfit edir |
+
+**Qərar ağacı** təlim məlumatında *mükəmməldir*: xəta sıfırdır. Bu, şübhə yaratmalıdır. Ağac məhdudlaşdırılmadıqda hər mənzil üçün ayrıca “yarpaq” yaradır və məlumatı tamamilə əzbərləyir. Yeni məlumatda isə xətti modeldən də pis işləyir.
+
+**Təsadüfi meşə** yüzlərlə ağacı məlumatın təsadüfi alt-çoxluqları üzərində öyrədir və onların proqnozlarını ortalayır. Ayrı-ayrı ağacların səhvləri bir-birini qismən kompensasiya edir. Bu, <Term id="ensemble-learning" full />dir. Fəsil 6-da onu ətraflı öyrənəcəyik.
+
+<Callout variant="tip" title="Model “qısa siyahısı”">
+Bu mərhələdə hiperparametrlərlə çox vaxt itirməyin. Fərqli ailələrdən 2–5 perspektivli model seçin: xətti modellər, ağaclar və ansambllar, k-NN, neyron şəbəkələr. Hər birini defolt parametrlərlə yoxlayın və qısa siyahıya salın. Dəqiqləşdirmə növbəti dərsin mövzusudur.
+</Callout>
+
+</Section>
+
+<Section id="cross-validation">
+
+Təlim xətası modeli qiymətləndirmək üçün **yaramır**. Qərar ağacı bunu açıq göstərdi. Test dəstinə isə hələ toxunmuruq. Həll Fəsil 1-dən tanış olan <Term id="cross-validation" full />dır:
+
+```python
+from sklearn.model_selection import cross_val_score
+
+scores = -cross_val_score(pipe, X_train, y_train, cv=10, scoring="neg_root_mean_squared_error")
+```
+
+Təlim dəsti 10 qata bölünür. Model 10 dəfə öyrədilir: hər dəfə 9 qatda öyrənir və qalan qatda qiymətləndirilir. Nəticədə 10 RMSE alırıq və onların ortasını və yayılmasını hesablayırıq:
+
+$$
+\overline{\text{RMSE}} = \frac{1}{10}\sum_{j=1}^{10}\text{RMSE}_j, \qquad s = \sqrt{\frac{1}{10}\sum_{j=1}^{10}\left(\text{RMSE}_j - \overline{\text{RMSE}}\right)^2}
+$$
+
+Yayılma ($s$) qiymətləndirmənin nə qədər dəqiq olduğunu göstərir. Təsadüfi meşə (30 569 ± 6 638) ilə xətti model (34 457 ± 7 436) arasındakı fərq hər birinin yayılmasından kiçikdir. Ona görə də “meşə daha yaxşıdır” nəticəsini ehtiyatla qəbul etməliyik. Bu dəstdə hər qatda cəmi 192 mənzil var və bir neçə bahalı mənzil həmin qatın RMSE-sini kəskin dəyişir.
+
+<Callout variant="info">
+Scikit-Learn-in çarpaz validasiya funksiyaları “böyük = yaxşı” məntiqi ilə işləyən **utility** funksiyası gözləyir, xərc funksiyası yox. Ona görə metrikanın adı `neg_root_mean_squared_error`-dur və nəticəni mənfi işarə ilə müsbətə çeviririk.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+Üç modelin təlimi və çarpaz validasiyası. Skript eyni qovluqdakı `pipeline.py` faylından hazırlıq pipeline-ını idxal edir. Təsadüfi meşə 10 qatda 100 ağac öyrədir, ona görə də işləməsi bir neçə saniyə çəkə bilər.
+
+<PythonExample id="ch02.code.train" />
+
+</Section>
+
+<Section id="summary">
+
+- Pipeline sayəsində modeli **bir sətirlə** dəyişmək olur.
+- Xətti reqressiya **underfit** edir (~34.5k), qərar ağacı **overfit** edir (təlimdə 0, CV-də ~40.5k).
+- Təsadüfi meşə ən yaxşı CV nəticəsini verir (~30.6k), lakin hələ də overfit edir.
+- Modelləri **çarpaz validasiya** ilə müqayisə edin və **yayılmaya** da baxın.
+
+</Section>

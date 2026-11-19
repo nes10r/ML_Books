@@ -1,0 +1,56 @@
+<Section id="lle">
+
+Xətti üsullar (PCA, təsadüfi proyeksiya) əyilmiş manifoldu “aça” bilmir. İsveçrə rulonunu müstəviyə proyeksiya etdikdə qatlar üst-üstə düşür. Burada qeyri-xətti üsullar lazımdır. Ən intuitivlərindən biri <Term id="lle" full />dir.
+
+LLE belə düşünür: rulon bütövlükdə əyilmişdir, lakin **hər kiçik parçası təxminən düzdür**. Ona görə də:
+
+1. **Lokal əlaqələri öyrən.** Hər nöqtə üçün $k$ ən yaxın qonşusu tapılır və nöqtə onların xətti kombinasiyası kimi ifadə olunur. Çəkilər $w_{i,j}$ elə seçilir ki, nöqtə qonşularından mümkün qədər dəqiq bərpa olunsun. Çəkilərin cəmi 1 olur.
+2. **Bu əlaqələri aşağı ölçüdə qoru.** Yeni, məsələn 2D, koordinatlar elə yerləşdirilir ki, hər nöqtə yenə də **eyni çəkilərlə** qonşularından bərpa olunsun.
+
+Lokal həndəsə qorunur, qlobal əyilmə isə “açılır”. Python nümunəsində LLE-nin açdığı koordinat rulonun uzunluğu ilə **0.997** korrelyasiya göstərir. PCA-da bu rəqəm cəmi 0.219-dur.
+
+LLE-nin zəif tərəfləri də var. O, böyük məlumatda yaxşı miqyaslanmır, çünki qonşuları tapmaq $O(m \log m \cdot n)$, son addım isə $O(d\,m^2)$ əməliyyat tələb edir. Nəticə $k$-nın seçiminə də həssasdır.
+
+</Section>
+
+<Section id="others">
+
+Scikit-Learn-də bir neçə digər üsul da var:
+
+| Üsul | Nəyi qoruyur? | Tipik istifadə |
+|---|---|---|
+| **Təsadüfi proyeksiya** | Məsafələri (təxminən) | Çox yüksək ölçülü məlumatın sürətli azaldılması |
+| **MDS** (Multidimensional Scaling) | Bütün cüt məsafələri | Kiçik məlumatın vizuallaşdırılması |
+| **<Term id="isomap" full />** | Qonşuluq qrafı üzrə **geodezik** məsafələri | Manifoldun “açılması” (rulonda 0.992) |
+| **<Term id="t-sne" full />** | Lokal qonşuluqları: oxşarlar yaxın, fərqlilər uzaq | **Vizuallaşdırma** (2D/3D), klasterləri görmək |
+| **LDA** (xətti diskriminant analizi) | Siniflərin ayrılmasını (nəzarətli!) | Təsnifatdan əvvəl ön emal |
+
+t-SNE yüksək ölçülü məlumatı vizuallaşdırmaq üçün xüsusilə populyardır. Rəqəmlərdə onun 2D xəritəsinin **trustworthiness** göstəricisi 0.993-dür. Bu göstərici 2D-dəki qonşuların orijinal fəzada da qonşu olub-olmadığını ölçür. PCA-da isə bu rəqəm 0.799-dur.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch07.code.manifold" />
+
+</Section>
+
+<Section id="mistakes">
+
+- **t-SNE-ni ön emal kimi istifadə etmək.** t-SNE-nin yeni nöqtələri çevirmək üçün `transform()` metodu yoxdur və nəticə təsadüfi başlanğıcdan asılıdır. Ön emal üçün PCA və ya UMAP kimi üsullar daha uyğundur.
+- **t-SNE xəritəsində məsafələri və klaster ölçülərini şərh etmək.** t-SNE yalnız lokal qonşuluqları qoruyur. Klasterlər arasındakı məsafə və klasterin vizual ölçüsü mənasız ola bilər.
+- **Böyük məlumata birbaşa manifold üsulu tətbiq etmək.** Əvvəlcə PCA ilə 50-yə qədər ölçüyə endirin, sonra t-SNE/LLE tətbiq edin. Bu, həm sürətli, həm də daha dayanıqlıdır.
+- **Miqyaslamanı unutmaq.** Məsafəyə əsaslanan bütün üsullar əlamətlərin miqyasına həssasdır.
+
+</Section>
+
+<Section id="summary">
+
+- **LLE** hər nöqtəni qonşularının xətti kombinasiyası kimi təsvir edir və bu əlaqələri aşağı ölçüdə qoruyur. Rulonu “açır”.
+- **Isomap** geodezik məsafələri, **t-SNE** lokal qonşuluqları, **MDS** bütün məsafələri qoruyur. **LDA** isə nəzarətlidir.
+- **t-SNE** vizuallaşdırma üçün əladır (rəqəmlərdə trustworthiness 0.993), lakin ön emal üçün yaramır.
+- Böyük məlumatda əvvəlcə **PCA**, sonra qeyri-xətti üsul tətbiq edin.
+
+Təbriklər! Fəsil 7-ni tamamladınız. Bilikləri yoxlamaq üçün [Fəsil 7-nin yekun testini](/exercises/ch07.quiz.final) həll edin.
+
+</Section>

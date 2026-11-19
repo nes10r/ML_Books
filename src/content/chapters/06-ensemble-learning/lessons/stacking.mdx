@@ -1,0 +1,56 @@
+<Section id="idea">
+
+Səsvermədə proqnozlar sadə qayda ilə birləşdirilir: səs çoxluğu və ya orta. Bəs birləşdirmə qaydasını da **öyrətsək** necə olar? <Term id="stacking" full /> məhz bunu edir. Əsas modellərin proqnozları yeni bir modelə **giriş əlamətləri** kimi verilir. Bu model <Term id="blender" full /> adlanır və yekun proqnozu öyrənir.
+
+Blender, məsələn, bunları öyrənə bilər: “k-NN ilə SVM razılaşanda onlara inan, razılaşmayanda təsadüfi meşəyə daha çox güvən”. Sadə səsvermə belə nüansları tuta bilmir.
+
+</Section>
+
+<Section id="training">
+
+Blenderi öyrətməyin bir incəliyi var. Əsas modellərin **təlim dəstindəki** proqnozları optimistdir: overfit edən model öz təlim nümunələrində demək olar ki, səhvsizdir. Blender bu proqnozlarla öyrədilsə, overfit edən modelə həddindən artıq güvənər.
+
+Həll çarpaz validasiyadır. Scikit-Learn-in `StackingClassifier` sinfi bunu avtomatik edir:
+
+1. Hər əsas model üçün `cross_val_predict` ilə “təmiz” proqnozlar alınır. Hər nümunəni həmin nümunəni görməyən model proqnozlaşdırır.
+2. Bu proqnozlar, təsnifatda ehtimallar, blender üçün təlim dəsti olur.
+3. Blender öyrədilir.
+4. Əsas modellər bütün təlim dəstində yenidən öyrədilir. Proqnoz zamanı onların çıxışı blenderə verilir.
+
+Bir neçə qatlı stacking də mümkündür: blenderlərin üzərində daha bir blender. Lakin bu, nadir hallarda praktiki qazanc verir və mürəkkəbliyi kəskin artırır.
+
+</Section>
+
+<Section id="python">
+
+Səsvermə dərsindəki dörd model və logistik reqressiya blender-i:
+
+<PythonExample id="ch06.code.stacking" />
+
+Stacking **0.920** dəqiqlik verir. Bu, ən yaxşı tək modeldən (SVC, 0.917) və yumşaq səsvermədən (0.918) bir az yaxşıdır. Blenderin əmsalları da maraqlıdır: o, k-NN-ə ən çox (3.22), logistik reqressiyaya isə ən az (0.13) güvənir. Bu, məntiqlidir: xətti model “ayların” formasını tuta bilmir.
+
+</Section>
+
+<Section id="choosing">
+
+| Ansambl | Necə işləyir? | Nə vaxt seçmək? |
+|---|---|---|
+| **Səsvermə** | Fərqli modellər, səs çoxluğu/ortalama | Artıq bir neçə yaxşı, fərqli modeliniz var |
+| **Bagging / təsadüfi meşə** | Eyni model, təsadüfi alt-çoxluqlar, paralel | Yüksək dispersiyalı modellər (ağaclar). Güclü “hazır” baza |
+| **Bustinq** | Modellər ardıcıl səhvləri düzəldir | Cədvəl məlumatında maksimum dəqiqlik (HistGB, XGBoost) |
+| **Stacking** | Öyrədilmiş blender | Müsabiqələr, son faizləri “sıxmaq”. Mürəkkəblik qəbul ediləndir |
+
+Praktiki qayda: cədvəl məlumatında əvvəlcə **təsadüfi meşə** və **HistGradientBoosting** sınayın. Stacking-i ancaq son mərhələdə, mürəkkəblik və hesablama vaxtı bunu əsaslandırdıqda istifadə edin.
+
+</Section>
+
+<Section id="summary">
+
+- **Stacking** əsas modellərin proqnozları üzərində **blender** öyrədir.
+- Blender **çarpaz validasiya proqnozları** ilə öyrədilməlidir, əks halda overfit edən modellərə həddindən artıq güvənir.
+- Bizim nümunədə stacking 0.920 verdi: ən yaxşı tək model 0.917, yumşaq səsvermə isə 0.918 idi.
+- Cədvəl məlumatı üçün əvvəlcə **meşə** və **bustinq** sınayın. Stacking son addımdır.
+
+Təbriklər! Fəsil 6-nı tamamladınız. Bilikləri yoxlamaq üçün [Fəsil 6-nın yekun testini](/exercises/ch06.quiz.final) həll edin.
+
+</Section>

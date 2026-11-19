@@ -1,0 +1,103 @@
+<Section id="model">
+
+<Term id="gaussian-mixture-model" full /> ehtimal modelidir. O, məlumatın naməlum parametrli **bir neçə Qauss paylanmasının qarışığından** yarandığını fərz edir. Hər paylanma bir klasterdir. Klasterin forması, ölçüsü, sıxlığı və istiqaməti fərqli ola bilər, yəni ellipsoid şəklindədir.
+
+Model məlumatın necə yarandığını belə təsvir edir. Bu, *generativ* hekayədir:
+
+1. Hər nümunə üçün $K$ klasterdən biri təsadüfi seçilir. $j$-ci klasterin seçilmə ehtimalı onun **çəkisidir**, $\phi^{(j)}$.
+2. Nümunə seçilmiş klasterin Qauss paylanmasından götürülür: $\mathbf{x} \sim \mathcal{N}\big(\boldsymbol{\mu}^{(j)}, \boldsymbol{\Sigma}^{(j)}\big)$.
+
+Ehtimal sıxlığı bütün komponentlərin çəkili cəmidir:
+
+$$
+p(\mathbf{x}) = \sum_{j=1}^{K} \phi^{(j)}\, \mathcal{N}\big(\mathbf{x} \mid \boldsymbol{\mu}^{(j)}, \boldsymbol{\Sigma}^{(j)}\big)
+$$
+
+Biz yalnız $\mathbf{x}$-ləri görürük. Hər nöqtənin hansı klasterdən gəldiyi *gizli dəyişəndir*. Məqsəd parametrləri qiymətləndirməkdir: $\phi$, $\boldsymbol{\mu}$, $\boldsymbol{\Sigma}$.
+
+</Section>
+
+<Section id="em">
+
+Parametrlər <Term id="expectation-maximization" full /> ilə tapılır. EM k-means-ə çox bənzəyir:
+
+1. **Başlanğıc:** parametrlər təsadüfi seçilir və ya k-means nəticəsindən götürülür.
+2. **E-addımı (expectation):** hər nöqtənin hər klasterə aid olma ehtimalı hesablanır. Buna *məsuliyyət* deyilir. Bu, *yumşaq* təyinatdır: nöqtə 70% bir klasterə, 30% digərinə aid ola bilər.
+3. **M-addımı (maximization):** hər klasterin çəkisi, ortası və kovariasiyası **bütün** nöqtələrdən yenilənir. Hər nöqtə məsuliyyəti ilə çəkilir.
+4. Log ehtimal (log-likelihood) artmağı dayandırana qədər 2–3-cü addımlar təkrarlanır.
+
+k-means kimi EM də yerli maksimuma yığıla bilər. Ona görə bir neçə başlanğıcla işlədilir (`n_init`).
+
+Kovariasiya matrisinin forması məhdudlaşdırıla bilər (`covariance_type`). Bu, parametrlərin sayını azaldır:
+
+- `"full"` — istənilən ellips, defolt seçimdir;
+- `"tied"` — bütün klasterlər eyni formadadır;
+- `"diag"` — ellipslər oxlara paraleldir;
+- `"spherical"` — dəyirmi, k-means-ə yaxındır.
+
+</Section>
+
+<Section id="simulation">
+
+Üç fərqli formalı klaster və bir neçə uzaq nöqtə: biri uzunsov, biri dəyirmi, biri maili. GMM brauzerdə EM alqoritmi ilə öyrədilir.
+
+<Demo id="gmm-anomaly" />
+
+Ellipslər hər komponentin 1σ və 2σ konturlarıdır. Qırmızı dairələr **sıxlığı ən aşağı** olan nöqtələrdir. Bu, anomaliya aşkarlanmasının ən sadə formasıdır.
+
+Aşağıdakı BIC qrafikinə diqqətlə baxın. Məlumatda üç əsas klaster var, lakin BIC ən kiçik qiyməti $k = 4$-də alır. Səbəb uzaq nöqtələrdir. Dördüncü komponent çox kiçik çəki ilə (~1.6%) məhz onları “udur”: ellipsi geniş və seyrəkdir. Python nümunəsindəki məlumatda belə uzaq nöqtələr yoxdur və orada BIC $k = 3$-ü seçir. Nəticə belədir: kənar qiymətlər model seçiminə də təsir edir. Ona görə də $k$-nı seçməzdən əvvəl ya onları təmizləyin, ya da kiçik çəkili komponentləri ayrıca yoxlayın.
+
+</Section>
+
+<Section id="selecting">
+
+k-means-dən fərqli olaraq GMM ehtimal modelidir. Ona görə də komponent sayını **informasiya meyarları** ilə seçmək olar. Bu meyarlar uyğunluğu parametr sayına görə cəzalandırır:
+
+$$
+\text{BIC} = -2\log\hat{L} + p\log m, \qquad \text{AIC} = -2\log\hat{L} + 2p
+$$
+
+Burada $\hat{L}$ modelin maksimal ehtimalı, $p$ parametrlərin sayı, $m$ isə nümunə sayıdır. Hər ikisi **ən kiçik** olanı seçir. <Term id="bic" full /> daha sadə modellərə meyillidir, AIC isə məlumata bir qədər daha yaxşı uyğunlaşan modeli seçə bilər.
+
+Alternativ <Term id="bayesian-gaussian-mixture" full />dir. Komponent sayı lazım olandan böyük verilir. Model isə lazımsız komponentlərin çəkisini avtomatik sıfıra endirir. Python nümunəsində 8 komponentlə başlanmış model 5-ni “söndürdü” və yalnız 3 həqiqi komponenti saxladı.
+
+</Section>
+
+<Section id="anomaly">
+
+<Term id="anomaly-detection" full /> normadan kəskin fərqlənən nümunələri tapmaqdır. GMM ilə bu təbiidir: **sıxlığı aşağı olan bölgədəki nöqtələr anomaliyadır**. Hədd gözlənilən anomaliya payına görə seçilir. Məsələn, 2% gözlənilirsə, sıxlığın 2-ci persentili hədd olur.
+
+Yaxın, lakin fərqli tapşırıq <Term id="novelty-detection" full />dir. Burada model **təmiz**, anomaliyasız məlumatda öyrədilir və yeni nümunənin “tanış” olub-olmadığını yoxlayır. Anomaliya aşkarlanmasında isə təlim məlumatının özündə də anomaliyalar ola bilər.
+
+Digər populyar üsullar:
+
+| Üsul | İdeya |
+|---|---|
+| **<Term id="isolation-forest" full />** | Təsadüfi ağaclarla nöqtələri təcrid edir. Anomaliyalar daha az bölgü ilə, yəni daha tez təcrid olunur |
+| **Local Outlier Factor** | Nöqtənin sıxlığını qonşularının sıxlığı ilə müqayisə edir |
+| **One-class SVM** | Normal məlumatı əhatə edən sərhəd öyrənir. Yenilik aşkarlanması üçün uyğundur |
+| **PCA** | Bərpa xətası böyük olan nöqtələr anomaliyadır |
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch08.code.gmm" />
+
+- EM həqiqi parametrləri çox yaxşı bərpa edir. Çəkilər 0.44 / 0.28 / 0.28-dir, həqiqi paylar isə 400 / 250 / 250 nöqtə idi. Ortalar da həqiqi mərkəzlərə yaxındır: (0, 0), (3, −2.5), (5, 3).
+- BIC ən kiçik qiyməti **k = 3**-də alır (5 869.5). Bu, həqiqi komponent sayıdır.
+- Bayes GMM 8 komponentdən yalnız 3-ünə sıfırdan böyük çəki verir.
+- IsolationForest və GMM-in anomaliyaları cəmi 33% üst-üstə düşür. Fərqli üsullar “anomaliya”nı fərqli başa düşür. Ona görə də nəticəni həmişə məsələnin kontekstində yoxlayın.
+
+</Section>
+
+<Section id="summary">
+
+- **GMM** məlumatı bir neçə Qauss paylanmasının qarışığı kimi modelləşdirir. Klasterlər ellipsoid formalı ola bilər.
+- **EM:** E-addımı yumşaq təyinat edir, M-addımı parametrləri yeniləyir. Yerli maksimum riski var, ona görə `n_init` istifadə olunur.
+- Komponent sayını **BIC/AIC** seçir. **Bayes GMM** artıq komponentləri özü söndürür.
+- Sıxlığı aşağı olan nöqtələr **anomaliyadır**. Alternativ üsullar: IsolationForest, LOF, One-class SVM.
+
+Təbriklər! Fəsil 8 ilə **I hissəni** — klassik maşın öyrənməsinin əsaslarını — tamamladınız. Bilikləri yoxlamaq üçün [Fəsil 8-in yekun testini](/exercises/ch08.quiz.final) həll edin. Növbəti hissədə neyron şəbəkələrə keçəcəyik.
+
+</Section>

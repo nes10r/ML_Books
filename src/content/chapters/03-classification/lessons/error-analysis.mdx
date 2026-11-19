@@ -1,0 +1,72 @@
+<Section id="why">
+
+Fəsil 2-də perspektivli modeli tapdıqdan sonra onu təkmilləşdirməyin bir yolu kimi **səhvlərin təhlilindən** danışdıq. Təsnifatda bunun əsas aləti çoxsinifli <Term id="confusion-matrix" />dir. O, ümumi dəqiqliyin arxasında **hansı səhvlərin** gizləndiyini göstərir.
+
+Bu dərsdə “StandardScaler + SGDClassifier” modelinin çarpaz validasiya proqnozlarını təhlil edirik. Onun dəqiqliyi 94.3%-dir: 1 437 təlim şəklindən 82-də səhv edir. Bu 82 səhv təsadüfi səpələnib, yoxsa nəyəsə işarə edir?
+
+</Section>
+
+<Section id="simulation">
+
+Matris 10 × 10-dur: sətir həqiqi rəqəmi, sütun isə proqnozu göstərir. “Yalnız səhvlər %” rejimində diaqonal gizlədilir və hər xana **həmin sətrin ümumi sayına** bölünür. Belə olduqda xananın rəngi həmin rəqəmin neçə faizinin bu səhvə uğradığını göstərir.
+
+<Demo id="confusion-explorer" />
+
+Ən tünd xanaya klikləyin və həmin şəkillərə baxın. Bəziləri insan üçün də çətindir: 8×8 piksel çox kiçikdir və bir piksel “2”ni “8”ə bənzədə bilər.
+
+</Section>
+
+<Section id="reading">
+
+Gəlin matrisi addım-addım oxuyaq.
+
+**1. Ümumi mənzərə.** Diaqonal tünddür, yəni rəqəmlərin çoxu düzgün təsnif edilir. Sinif üzrə recall 0.91 (rəqəm 9) ilə 0.99 (rəqəm 0) arasındadır.
+
+**2. Sətirlər — “bu rəqəm nə ilə qarışdırılır?”**
+
+| Həqiqi → proqnoz | Say | Həmin rəqəmlərin payı |
+|---|---|---|
+| 2 → 8 | 7 | 4.9% |
+| 1 → 8 | 6 | 4.1% |
+| 9 → 8 | 5 | 3.5% |
+| 9 → 3 | 5 | 3.5% |
+| 5 → 9 | 5 | 3.4% |
+
+**3. Sütunlar — “model nəyi tez-tez deyir?”** “8” sütunu digərlərindən tündür: 82 səhvin **34-ü** səhvən “8” proqnozudur. Növbəti ən çox səhv proqnoz “3”-dür, cəmi 12 dəfə. Model şübhəli halda “8” deməyə meyillidir. Ən çox qarışdırılan beş cütdən üçü də 8 ilə bağlıdır.
+
+**4. Hipotez.** “8” rəqəminin piksel kütləsi şəklin bütün mərkəzinə yayılıb. Qalın yazılmış 1, 2 və 9 da mərkəzdə çoxlu piksel “yandırır”. Xətti model yalnız piksellərin çəkili cəmini hesablayır. Halqaların sayını, xətlərin bağlılığını isə “görmür”.
+
+<Callout variant="warning" title="Normallaşdırmanı unutmayın">
+Xam saylarla işləsək, kiçik siniflərdəki ciddi problemlər “az” görünərdi. Həmişə **sətir üzrə** (həqiqi sinfə görə) normallaşdırın. Model nəyi tez-tez səhvən dediyini görmək istəsəniz, **sütun üzrə** normallaşdırın.
+</Callout>
+
+</Section>
+
+<Section id="improvements">
+
+Təhlildən konkret addımlar çıxır:
+
+1. **Daha güclü model sınayın.** SVC eyni məlumatda 98.3% dəqiqlik verir. Qeyri-xətti modellər forma fərqlərini daha yaxşı tutur.
+2. **Problemli siniflər üçün daha çox məlumat toplayın.** Məsələn, 8-ə bənzəyən, lakin 8 olmayan rəqəmlər.
+3. **Yeni əlamətlər yaradın.** Qapalı halqaların sayı (8-də 2, 9-da 1, 1-də 0) və ya şəklin yuxarı/aşağı yarısındakı piksel kütləsi.
+4. **Ön emal tətbiq edin.** Şəkilləri mərkəzləşdirmək və maili yazını düzləşdirmək.
+5. **<Term id="data-augmentation" full />.** Hər şəklin bir piksel sürüşdürülmüş və ya bir az döndərilmiş nüsxələrini təlimə əlavə edin. Model mövqe və maillik fərqlərinə davamlı olur. Bu üsul yalnız təlim dəstinə tətbiq olunur.
+
+</Section>
+
+<Section id="python">
+
+Aşağıdakı skript simulyasiyadakı eyni proqnozlardan sinif üzrə recall-u və ən çox qarışdırılan cütləri çıxarır:
+
+<PythonExample id="ch03.code.error-analysis" />
+
+</Section>
+
+<Section id="summary">
+
+- Çoxsinifli **qarışıqlıq matrisi** səhvlərin strukturunu göstərir. **Sətir üzrə normallaşdırın.**
+- Modelimizin ən çox qarışdırdığı cütlər: **2→8, 1→8, 9→8**. Model şübhəli halda “8” deməyə meyillidir.
+- Səhv şəkillərə **baxın**: bəziləri insan üçün də çətindir.
+- Növbəti addımlar: güclü model, məlumat, əlamətlər, ön emal, **məlumat artırma**.
+
+</Section>

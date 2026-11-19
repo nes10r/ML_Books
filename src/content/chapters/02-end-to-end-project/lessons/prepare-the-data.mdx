@@ -1,0 +1,123 @@
+<Section id="why-functions">
+
+Məlumatı modelə hazırlamağı əl ilə, Excel-də və ya notebook-da bir dəfəlik addımlarla etmək cazibədardır. Bunun əvəzinə **hər çevirməni funksiya kimi yazırıq**, çünki:
+
+- eyni çevirmələri **istənilən məlumat dəstinə** (yeni versiyaya, test dəstinə) yenidən tətbiq edə bilərik;
+- gələcək layihələr üçün **kitabxana** toplayırıq;
+- istifadəyə verilmiş sistem **yeni gələn məlumatı** eyni qayda ilə emal etməlidir;
+- müxtəlif variantları (məsələn, median və ya orta ilə doldurma) **asanlıqla sınaya** bilərik.
+
+Əvvəlcə əlamətləri hədəfdən ayırırıq. Onlara eyni çevirmələr tətbiq etmək istəmirik:
+
+```python
+X = train_set.drop(columns=["id", "qiymet"])
+y = train_set["qiymet"].copy()
+```
+
+</Section>
+
+<Section id="cleaning">
+
+ML alqoritmlərinin çoxu boş xanalarla işləyə bilmir. `metro_mesafe` sütununda 111 boşluq var. Üç seçimimiz var:
+
+1. **Sətri atmaq:** `X.dropna(subset=["metro_mesafe"])`. Məlumatın ~5%-i itir.
+2. **Sütunu atmaq:** `X.drop(columns="metro_mesafe")`. Faydalı əlamət itir.
+3. **Boşluğu doldurmaq** (<Term id="imputation" full />): median, orta, ən çox rast gələn qiymət və ya oxşar mənzillərə əsaslanan qiymət (`KNNImputer`).
+
+Ən az dağıdıcı olan üçüncü seçimdir. Scikit-Learn-də `SimpleImputer` bunu “öyrənən” obyekt kimi edir:
+
+1. `fit()` hər sütunun **təlim dəstindəki** medianını hesablayıb `statistics_` atributunda saxlayır.
+2. `transform()` boşluqları həmin medianlarla doldurur: təlimdə, testdə və gələcək yeni məlumatda.
+
+Bizim dəstdə öyrənilən medianlar: `otaq_sayi` = 3, `metro_mesafe` = 1.21 km.
+
+<Callout variant="tip" title="Yazı səhvləri">
+Boşluqlarla yanaşı, kəşf zamanı tapdığımız yazı səhvlərini də (400 m²-dən böyük sahə) düzəltmək lazımdır. Bunu da kodla edirik, növbəti dərsdə xüsusi transformer kimi: `AreaTypoFixer`. Səhvləri əl ilə düzəltsəydik, gələcəkdə gələn yeni səhvlər düzəlməmiş qalardı.
+</Callout>
+
+</Section>
+
+<Section id="categorical">
+
+Modellər ədədlərlə işləyir. Mətn kateqoriyalarını ədədə çevirməyin iki əsas yolu var.
+
+**<Term id="ordinal-encoding" full />.** Hər kateqoriyaya bir tam ədəd verilir. Bu, yalnız kateqoriyaların **təbii sırası** varsa məntiqlidir. `temir` belə bir sütundur: təmirsiz (0) kiçik orta (1) kiçik əla (2). Sıranı açıq şəkildə veririk, əks halda kodlaşdırıcı əlifba sırasından istifadə edər:
+
+```python
+OrdinalEncoder(categories=[["təmirsiz", "orta", "əla"]])
+```
+
+**<Term id="one-hot-encoding" full />.** Hər kateqoriya üçün ayrıca 0/1 sütunu yaradılır. `rayon` üçün sıra yoxdur: Nəsimi Səbaildən “böyük” deyil. Sıralı kodlar modelə mənasız bir yaxınlıq öyrədərdi, məsələn “2 nömrəli rayon 3 nömrəliyə 9 nömrəlidən daha oxşardır”. One-hot ilə 10 rayon 10 sütuna çevrilir. Hər sətirdə yalnız birində 1 olur.
+
+| rayon | rayon_Nəsimi | rayon_Səbail | rayon_Yasamal | … |
+|---|---|---|---|---|
+| Nəsimi | 1 | 0 | 0 | … |
+| Yasamal | 0 | 0 | 1 | … |
+
+<Callout variant="info" title="Seyrək matrislər">
+`OneHotEncoder` nəticəni **seyrək matris** (SciPy `csr_matrix`) kimi qaytarır. O, yalnız sıfır olmayan qiymətləri saxlayır. Minlərlə kateqoriya olduqda bu, yaddaşda böyük qənaət deməkdir. Kateqoriya çox olarsa (məsələn, küçə adları), one-hot yüzlərlə sütun yaradır. Bu halda ədədi əvəzedicilərdən (məs. küçənin koordinatı) və ya növbəti fəsillərdəki *embedding*-lərdən istifadə etmək daha yaxşıdır.
+</Callout>
+
+`handle_unknown="ignore"` parametri vacibdir. Təlimdə olmayan yeni rayon (məsələn, Pirallahı) gəlsə, bütün one-hot sütunları sıfır olur və sistem xəta vermir.
+
+</Section>
+
+<Section id="scaling">
+
+Ədədi əlamətlərin miqyası çox fərqlidir: enlik 0.15 dərəcə aralığında, sahə isə 25–320 m² aralığında dəyişir. <Term id="feature-scaling" full /> məsafəyə əsaslanan (k-NN) və qradiyent ilə öyrənən (xətti modellər, neyron şəbəkələr) alqoritmlər üçün çox vacibdir. Ağaclar isə miqyasa həssas deyil.
+
+**<Term id="min-max-scaling" full />** qiymətləri $[0, 1]$ aralığına gətirir:
+
+$$
+x' = \frac{x - x_{\min}}{x_{\max} - x_{\min}}
+$$
+
+**<Term id="standardization" full />** ortanı çıxır və standart kənarlaşmaya bölür:
+
+$$
+z = \frac{x - \mu}{\sigma}
+$$
+
+Standartlaşdırma nəticəsi müəyyən aralıqla məhdudlaşmır, lakin **kənar qiymətlərə daha dözümlüdür**. Bir 1 486 m²-lik səhv min-max-da bütün real mənzilləri (ən böyüyü 320 m²) təxminən $[0, 0.2]$ aralığına sıxar. Standartlaşdırmada isə yalnız o nöqtə uzaqda qalar.
+
+**Əyilmiş paylanmalar.** Sahə və qiymətin uzun sağ “quyruğu” var. Hər iki miqyaslama formanı dəyişmir, yalnız sürüşdürür və uzadır/sıxır. Paylanmanı simmetrikləşdirmək üçün əvvəlcə **logarifm** (və ya kvadrat kök) tətbiq olunur, sonra miqyaslanır. Başqa bir yol əlaməti **vedrələrə** (bucket) bölməkdir, məsələn sahəni 10 kvantil qrupuna.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada bütün dəst üzərində hər çevirmənin paylanmaya təsirini görün. **Əyilmə** (skewness) göstəricisinə diqqət edin: 0 simmetrik, müsbət qiymət isə uzun sağ quyruq deməkdir.
+
+<Demo id="feature-scaling" />
+
+`prepare.py` skriptinin nəticəsi də eyni şeyi göstərir. Sahə üçün min-max və standartlaşdırmada əyilmə 2.95 olaraq qalır. Log + standartlaşdırmadan sonra isə 0.38-ə enir.
+
+</Section>
+
+<Section id="python">
+
+Aşağıdakı skript hazırlığın hər addımını ayrı-ayrılıqda göstərir. Növbəti dərsdə onları bir pipeline-a birləşdirəcəyik.
+
+<PythonExample id="ch02.code.prepare" />
+
+</Section>
+
+<Section id="mistakes">
+
+- **Scaler və ya imputer-i bütün məlumatda (test daxil) fit etmək.** Bu, məlumat sızmasıdır. Həmişə `fit` yalnız təlim dəstində aparılır, `transform` isə hər yerdə tətbiq edilir.
+- **Test dəstinə `fit_transform` çağırmaq.** Test dəstinin öz medianı və ya ortası hesablanır və təlimlə uyğunsuzluq yaranır. Testə yalnız `transform` tətbiq olunur.
+- **Sırası olmayan kateqoriyaya `OrdinalEncoder`.** Model mövcud olmayan sıranı öyrənir.
+- **Log-u sıfır və ya mənfi qiymətə tətbiq etmək.** `np.log(0)` sonsuzluqdur. Lazım gəldikdə `np.log1p` istifadə edin.
+- **Hədəfi çevirib geri çevirməyi unutmaq.** Qiyməti log ilə proqnozlaşdırırsınızsa, proqnozları `np.exp` ilə geri qaytarın. Scikit-Learn-də `TransformedTargetRegressor` bunu avtomatik edir.
+
+</Section>
+
+<Section id="summary">
+
+- Hər çevirməni **təkrar istifadə olunan kod** kimi yazın.
+- Boşluqlar: **SimpleImputer** (median). Yazı səhvləri: kodla düzəldilir.
+- Sıralı kateqoriya: **OrdinalEncoder** (açıq sıra ilə). Sırasız kateqoriya: **OneHotEncoder**.
+- Miqyaslama: **min-max** və ya **standartlaşdırma**. Əyilmiş paylanmalar üçün əvvəlcə **log**.
+- `fit` yalnız **təlim** dəstində aparılır.
+
+</Section>

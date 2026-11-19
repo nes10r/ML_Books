@@ -1,0 +1,70 @@
+<Section id="regression">
+
+Qərar ağacları yalnız sinif deyil, **ədəd** də proqnozlaşdırır. Quruluş eynidir, fərq yarpaqlardadır: yarpaq sinif əvəzinə **ədədi qiymət** saxlayır. Bu qiymət həmin yarpağa düşən təlim nümunələrinin hədəflərinin **ortasıdır**.
+
+Nümunə kimi sintetik məlumat götürək: gün ərzində temperatur. Səhər tezdən sərin olur, günortadan sonra isti, gecə yenidən sərinləyir. Saat əlamət, temperatur isə hədəfdir. Dərinliyi 2 olan ağac belədir:
+
+```text
+saat ≤ 8.8
+├── saat ≤ 4.6  → 4.4 °C   (gecə)
+└── saat > 4.6  → 8.2 °C   (səhər)
+saat > 8.8
+├── saat ≤ 20.4 → 16.7 °C  (gündüz)
+└── saat > 20.4 → 9.6 °C   (axşam)
+```
+
+Ağac günü dörd “zaman zonasına” bölüb və hər zona üçün orta temperaturu öyrənib. Saat 14:00 üçün proqnoz $16.7$ °C-dir. Bu, gündüz zonasındakı bütün təlim nümunələrinin ortasıdır.
+
+</Section>
+
+<Section id="cost">
+
+CART reqressiya üçün də eyni işləyir. Yeganə fərq budur: qeyri-müəyyənlik əvəzinə **MSE** minimallaşdırılır:
+
+$$
+J(k, t_k) = \frac{m_{\text{sol}}}{m}\,\text{MSE}_{\text{sol}} + \frac{m_{\text{sag}}}{m}\,\text{MSE}_{\text{sag}}, \qquad \text{MSE}_{\text{node}} = \frac{1}{m_{\text{node}}}\sum_{i \in \text{node}}\left(\hat{y}_{\text{node}} - y^{(i)}\right)^2
+$$
+
+Burada $\hat{y}_{\text{node}}$ düyündəki hədəflərin ortasıdır. Alqoritm hər bölgünü elə seçir ki, nümunələrin çoxu öz qrupunun ortasına mümkün qədər yaxın olsun.
+
+Təsnifat ağacları kimi reqressiya ağacları da **overfitting-ə meyillidir**. Məhdudiyyətsiz ağac hər təlim nöqtəsini ayrıca yarpağa qoyur. Pilləli funksiya küyü olduğu kimi təkrarlayır.
+
+</Section>
+
+<Section id="simulation">
+
+Simulyasiyada qırmızı pilləli xətt ağacın proqnozu, qırıq yaşıl xətt isə həqiqi temperatur əyrisidir.
+
+<Demo id="regression-tree" />
+
+- `max_depth = 1`: bir sual, iki pillə — “gecə” və “gündüz”.
+- `max_depth = 3–4`: pillələr həqiqi əyrini kifayət qədər yaxşı izləyir.
+- `None`: hər nöqtə öz pilləsini alır. Təlim RMSE sıfıra enir, proqnoz isə küylə birlikdə “titrəyir”.
+
+Diqqət edin: ağac **0–24 aralığından kənarda** proqnoz verə bilmir. Son pillənin qiyməti olduğu kimi davam edir. Ağaclar ekstrapolyasiya etmir.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch05.code.regression" />
+
+| Model | Yarpaq | Təlim RMSE | Test RMSE |
+|---|---|---|---|
+| `max_depth=2` | 4 | 2.56 | 2.57 — underfitting |
+| `max_depth=4` | 16 | 1.46 | **1.45** — yaxşı |
+| Məhdudiyyətsiz | 140 | **0.00** | 1.77 — overfitting |
+| `min_samples_leaf=10` | 11 | 1.65 | 1.70 |
+
+Küyün standart kənarlaşması 1.5 °C-dir. Dərinliyi 4 olan ağacın test xətası bu həddə çox yaxındır. Məhdudiyyətsiz ağac təlim dəstini əzbərləyib, yeni məlumatda isə daha pisdir.
+
+</Section>
+
+<Section id="summary">
+
+- Reqressiya ağacının yarpağı **hədəflərin ortasını** proqnozlaşdırır, ona görə proqnoz **pillələrdən** ibarətdir.
+- CART bölgüləri **çəkili MSE**-ni minimallaşdıraraq seçir.
+- Təsnifat ağacları kimi **overfitting-ə meyillidir**: 140 yarpaqlı ağac təlimdə 0, testdə 1.77 RMSE verir.
+- Ağaclar təlim aralığından kənarda **ekstrapolyasiya etmir**.
+
+</Section>

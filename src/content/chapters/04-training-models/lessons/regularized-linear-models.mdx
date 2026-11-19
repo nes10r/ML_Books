@@ -1,0 +1,129 @@
+<Section id="ridge">
+
+Fəsil 1-dən bildiyimiz kimi, overfitting-i azaltmağın yaxşı yolu modeli **məhdudlaşdırmaqdır**, yəni requlyarlaşdırmaqdır. Polinom modeldə bunun sadə yolu dərəcəni azaltmaqdır. Xətti modeldə isə adətən çəkilər məhdudlaşdırılır.
+
+<Term id="ridge-regression" full /> xərc funksiyasına çəkilərin kvadratları cəmini əlavə edir, yəni $\ell_2$ cəriməsini:
+
+$$
+J(\boldsymbol{\theta}) = \text{MSE}(\boldsymbol{\theta}) + \frac{\alpha}{m}\sum_{i=1}^{n}\theta_i^2
+$$
+
+- $\alpha = 0$: adi xətti reqressiya.
+- $\alpha$ çox böyük: bütün çəkilər sıfıra yaxınlaşır və model ortadan keçən üfüqi xəttə çevrilir.
+- Kəsişmə $\theta_0$ cəzalandırılmır, cəm $i = 1$-dən başlayır.
+
+Cərimə **yalnız təlim zamanı** əlavə olunur. Model qiymətləndirilərkən adi metrika (RMSE) istifadə olunur.
+
+Ridge-in də qapalı həlli var. Normal tənliyə $\alpha \mathbf{A}$ əlavə olunur. Burada $\mathbf{A}$ vahid matrisdir, lakin kəsişməyə uyğun yuxarı sol elementi 0-dır:
+
+$$
+\hat{\boldsymbol{\theta}} = \left(\mathbf{X}_b^{\intercal}\mathbf{X}_b + \alpha\mathbf{A}\right)^{-1}\mathbf{X}_b^{\intercal}\mathbf{y}
+$$
+
+Maraqlı bonus: $\alpha \mathbf{A}$ əlavə olunduqdan sonra matris **həmişə tərsə çevrilir**. Bu, singulyarlıq problemini də həll edir.
+
+<Callout variant="warning">
+Requlyarlaşdırılmış modellərdən əvvəl **əlamətləri miqyaslayın**. Cərimə bütün çəkilərə eyni tətbiq olunur. Kiçik vahiddə ölçülən əlamətin çəkisi böyük olur və ədalətsiz şəkildə daha çox cəzalanır.
+</Callout>
+
+</Section>
+
+<Section id="lasso">
+
+<Term id="lasso-regression" full /> kvadratlar əvəzinə **mütləq qiymətlərdən** istifadə edir, yəni $\ell_1$ cəriməsindən:
+
+$$
+J(\boldsymbol{\theta}) = \text{MSE}(\boldsymbol{\theta}) + 2\alpha\sum_{i=1}^{n}\left|\theta_i\right|
+$$
+
+Bu kiçik fərqin böyük nəticəsi var: Lasso **əhəmiyyətsiz əlamətlərin çəkilərini tam sıfıra endirir**. Yəni avtomatik **əlamət seçimi** edir və seyrək (sparse) model qaytarır.
+
+Niyə belədir? Kiçik bir çəkini sıfıra endirmək $\ell_2$ cəriməsini demək olar ki, azaltmır. Məsələn, $0.1^2 = 0.01$. $\ell_1$ cəriməsi isə hər vahid üçün eyni “qiyməti” tələb edir: $|0.1| = 0.1$. Ona görə də Lasso-da faydası az olan çəkini tamamilə sıfırlamaq “sərfəli” olur.
+
+Texniki qeyd: $|\theta|$ funksiyasının sıfırda törəməsi yoxdur. Qradiyent enmə yenə də işləyir, bunun üçün *subqradiyent* istifadə olunur. Scikit-Learn isə Lasso-nu *koordinat enməsi* ilə həll edir: çəkiləri növbə ilə bir-bir optimallaşdırır.
+
+</Section>
+
+<Section id="elastic-net">
+
+<Term id="elastic-net" full /> iki cərimənin qarışığıdır. Qarışıq nisbəti $r$ ilə idarə olunur:
+
+$$
+J(\boldsymbol{\theta}) = \text{MSE}(\boldsymbol{\theta}) + r\left(2\alpha\sum_{i}|\theta_i|\right) + (1 - r)\left(\frac{\alpha}{m}\sum_{i}\theta_i^2\right)
+$$
+
+$r = 0$ olduqda Ridge, $r = 1$ olduqda isə Lasso alınır.
+
+**Hansını seçmək?** Praktiki qayda belədir:
+
+- Bir az requlyarlaşdırma demək olar ki, həmişə faydalıdır. Ona görə də adi xətti reqressiyadan qaçın.
+- **Ridge** yaxşı başlanğıcdır.
+- Əlamətlərin yalnız bir neçəsinin faydalı olduğundan şübhələnirsinizsə, **Lasso** və ya **Elastic Net** seçin.
+- Əlamət sayı nümunə sayından çoxdursa və ya əlamətlər güclü korrelyasiyalıdırsa, **Elastic Net** seçin. Belə hallarda Lasso qeyri-sabit davranır və korrelyasiyalı qrupdan təsadüfi birini seçir.
+
+</Section>
+
+<Section id="simulation">
+
+Məlumatda 8 əlamət var, lakin yalnız 4-ü həqiqətən təsirlidir. Həqiqi çəkilər $[3, -2, 1.5, 0, 0, 0, 0.5, 0]$-dır. Qrafik $\alpha$ artdıqca hər çəkinin necə dəyişdiyini göstərir. Bu, *requlyarlaşdırma yolu* adlanır. Faydasız əlamətlər qırıq xətlə göstərilib.
+
+<Demo id="regularization-paths" />
+
+- **Lasso**-da $\alpha \approx 0.3$ olduqda 4 faydasız çəkinin hamısı **dəqiq sıfırdır**. Faydalılar isə qalır, sadəcə bir qədər kiçilir. $\alpha$ artdıqca ən zəif faydalı əlamət ($0.5$) da sıfırlanır.
+- **Ridge**-də heç bir çəki tam sıfır olmur. Hamısı birlikdə, hamar şəkildə kiçilir.
+- **Elastic Net** ikisinin arasındadır.
+
+</Section>
+
+<Section id="early-stopping">
+
+İterativ alqoritmlər üçün tamamilə fərqli bir requlyarlaşdırma yolu var: <Term id="early-stopping" full />. İdeya sadədir:
+
+1. Hər epoxadan sonra validasiya xətasını ölçün.
+2. Validasiya xətası azaldıqca modelin ən yaxşı nüsxəsini yadda saxlayın.
+3. Xəta bir müddət azalmayanda təlimi dayandırın və ən yaxşı nüsxəyə qayıdın.
+
+Təlimin əvvəlində model həm təlim, həm validasiya məlumatında yaxşılaşır. Müəyyən nöqtədən sonra validasiya xətası artmağa başlayır, çünki model küyü öyrənir. Erkən dayandırma məhz həmin nöqtədə dayanır. Bu üsul o qədər sadə və effektivdir ki, dərin öyrənmədə demək olar ki, həmişə istifadə olunur.
+
+<Callout variant="tip">
+SGD-də validasiya əyrisi titrəyişlidir. Ona görə də dərhal deyil, validasiya xətası **bir neçə epoxa** ərzində yaxşılaşmayanda dayanın (*patience*). Sonra ən yaxşı modelə qayıdın.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+Python nümunəsi simulyasiyadakı quruluşa oxşar məlumat istifadə edir: 8 əlamət, 4-ü faydasızdır. Skript dörd modeli müqayisə edir və erkən dayandırma tətbiq edir:
+
+<PythonExample id="ch04.code.regularization" />
+
+| Model | Faydasız əmsallar (x₄, x₅, x₆, x₈) | Sıfır əmsal |
+|---|---|---|
+| Xətti reqressiya | 0.06, 0.10, −0.12, 0.13 | 0 |
+| Ridge (α = 10) | 0.16, 0.09, −0.07, 0.04 | 0 |
+| Lasso (α = 0.3) | **0, 0, 0, 0** | **4** |
+| Elastic Net (α = 0.3, r = 0.5) | 0.07, 0, 0, 0 | 3 |
+
+Lasso 4 faydasız əlamətin hamısını dəqiq tapdı və faydalı əlamətlərin heç birini atmadı.
+
+</Section>
+
+<Section id="mistakes">
+
+- **Miqyaslamadan requlyarlaşdırma.** Cərimə ədalətsiz paylanır. Həmişə `StandardScaler` → model ardıcıllığından istifadə edin.
+- **α-nı test dəstinə görə seçmək.** α hiperparametrdir. `RidgeCV`, `LassoCV` və ya `GridSearchCV` ilə seçin.
+- **Lasso ilə korrelyasiyalı əlamətlər.** Lasso qrupdan təsadüfi birini saxlayıb digərlərini sıfırlaya bilər. Belə hallarda Elastic Net seçin.
+- **Cəriməni qiymətləndirmə metrikasına qatmaq.** Cərimə yalnız təlim üçündür. Model adi RMSE ilə müqayisə olunur.
+- **Erkən dayandırmada son modeli saxlamaq.** Ən yaxşı validasiya xətasına malik nüsxəni saxlayın.
+
+</Section>
+
+<Section id="summary">
+
+- **Ridge** ($\ell_2$): çəkiləri kiçildir, lakin sıfırlamır. Həmişə tərsə çevrilən qapalı həlli var.
+- **Lasso** ($\ell_1$): faydasız çəkiləri **tam sıfırlayır** və avtomatik əlamət seçimi edir.
+- **Elastic Net:** qarışıqdır. Korrelyasiyalı və ya çoxlu əlamətdə sabitdir.
+- **Erkən dayandırma:** validasiya xətası minimumda olanda təlimi dayandırın. Sadə və effektivdir.
+- Requlyarlaşdırmadan əvvəl **miqyaslayın**, α-nı **validasiya ilə** seçin.
+
+</Section>

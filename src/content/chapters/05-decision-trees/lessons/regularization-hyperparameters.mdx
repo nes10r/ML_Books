@@ -1,0 +1,73 @@
+<Section id="nonparametric">
+
+Xətti model məlumat haqqında güclü fərziyyə edir: əlaqə xəttidir. Onun parametrlərinin sayı təlimdən əvvəl məlumdur. Belə model **parametrik** adlanır. Sərbəstliyi məhduddur, ona görə də overfitting riski azdır, underfitting riski isə çoxdur.
+
+Qərar ağacı demək olar ki, heç bir fərziyyə etmir. Məhdudlaşdırılmasa, məlumatın “istədiyi” qədər böyüyür və hər nümunəni ayrıca yarpağa yerləşdirə bilər. Onun quruluşu təlimdən əvvəl müəyyən deyil. Belə model <Term id="nonparametric-model" full /> adlanır. Parametrləri yoxdur demək deyil, sadəcə onların sayı əvvəlcədən sabit deyil.
+
+Nəticədə məhdudiyyətsiz ağac təlim məlumatına çox yaxından uyğunlaşır və küyü də öyrənir. Bunun qarşısını almaq üçün təlim zamanı onun sərbəstliyini məhdudlaşdırırıq. Bu, <Term id="regularization" />dır.
+
+</Section>
+
+<Section id="hyperparameters">
+
+Scikit-Learn-in `DecisionTreeClassifier` sinfində ağacın formasını məhdudlaşdıran əsas hiperparametrlər bunlardır:
+
+1. **`max_depth`** — maksimal dərinlik. Defolt `None`, yəni məhdudiyyət yoxdur. Ən intuitiv “əyləc”dir.
+2. **`min_samples_split`** — düyünün bölünməsi üçün tələb olunan minimal nümunə sayı.
+3. **`min_samples_leaf`** — hər yarpaqda olmalı olan minimal nümunə sayı. Ən təsirli seçimlərdən biridir: tək-tək küylü nöqtələr üçün ayrıca yarpaq yaradılmasının qarşısını alır.
+4. **`min_weight_fraction_leaf`** — eyni şey, lakin ümumi çəkinin payı kimi. Nümunə çəkiləri olduqda faydalıdır.
+5. **`max_leaf_nodes`** — maksimal yarpaq sayı. Ağac ən faydalı bölgüləri prioritet verərək böyüyür.
+6. **`max_features`** — hər düyündə bölgü üçün yoxlanılan əlamətlərin sayı. Fəsil 6-da təsadüfi meşədə vacib rol oynayacaq.
+
+**Qayda:** `min_*` hiperparametrlərini **artırmaq** və `max_*` hiperparametrlərini **azaltmaq** modeli requlyarlaşdırır.
+
+<Callout variant="info" title="Budama (pruning)">
+Başqa bir yanaşma ağacı əvvəlcə tam böyütmək, sonra lazımsız düyünləri “budamaqdır”. Məsələn, statistik testlə əhəmiyyətsiz sayılan bölgüləri silmək olar. Scikit-Learn-də bunun üçün `ccp_alpha` parametri var. Bu, xərc-mürəkkəblik budamasıdır: böyük `ccp_alpha` daha çox düyün kəsir.
+</Callout>
+
+</Section>
+
+<Section id="simulation">
+
+“Aylar” məlumatı iki iç-içə yarımdairədən ibarətdir və küylüdür, yəni siniflər qismən qarışıqdır. Dolu nöqtələr təlim, boş nöqtələr isə validasiya dəstidir.
+
+<Demo id="tree-regularization" />
+
+Məhdudiyyətsiz ağacda (`None`) təlim dəqiqliyi **100%**-dir. Bölgələrdə isə xırda “adalar” görünür: ağac hər küylü nöqtə üçün ayrıca bölgə yaradıb. `min_samples_leaf`-i artırdıqda adalar yox olur, sərhəd hamarlanır və validasiya dəqiqliyi adətən yaxşılaşır. Aşağıdakı qrafikdə də klassik mənzərəni görürük: təlim dəqiqliyi dərinliklə daim artır, validasiya dəqiqliyi isə müəyyən dərinlikdən sonra artmır, hətta düşür.
+
+</Section>
+
+<Section id="python">
+
+Eyni təcrübə Scikit-Learn ilə, sonra isə `GridSearchCV` ilə sistemli tənzimləmə:
+
+<PythonExample id="ch05.code.regularization" />
+
+| Model | Yarpaq | Təlim | Test |
+|---|---|---|---|
+| Məhdudiyyətsiz | 31 | **100%** | 85.6% |
+| `min_samples_leaf=8` | 14 | 91.9% | **88.9%** |
+| `max_depth=4` | 11 | 91.4% | 86.7% |
+| GridSearchCV (`max_depth=6`, `min_samples_leaf=3`) | — | — | **91.1%** |
+
+Requlyarlaşdırılmış ağaclar təlim məlumatında “pis”, yeni məlumatda isə **daha yaxşıdır**. Bu, overfitting-in tanış simptomudur.
+
+</Section>
+
+<Section id="mistakes">
+
+- **Məhdudiyyətsiz ağacla kifayətlənmək.** Defolt parametrlər demək olar ki, həmişə overfit edir. Həmişə ən azı `max_depth` və ya `min_samples_leaf`-i tənzimləyin.
+- **Hiperparametrləri təlim dəqiqliyinə görə seçmək.** Təlim dəqiqliyi həmişə dərinliklə artır. Seçim çarpaz validasiya ilə aparılmalıdır.
+- **Ağacı “əbədi həqiqət” kimi şərh etmək.** Ağacın quruluşu məlumatın kiçik dəyişikliklərinə həssasdır (bu fəslin son dərsi). Kökdəki sual başqa alt-nümunədə tamam fərqli ola bilər.
+- **`max_depth=1`-ə qədər sıxmaq.** Belə ağac (*decision stump*) çox sadədir və underfitting yaradır. Yalnız ansambllarda, məsələn AdaBoost-da (Fəsil 6), kərpic kimi faydalıdır.
+
+</Section>
+
+<Section id="summary">
+
+- Qərar ağacı **qeyri-parametrik** modeldir: məhdudlaşdırılmadıqda hər nümunəni əzbərləyir.
+- Əsas əyləclər: `max_depth`, `min_samples_leaf`, `min_samples_split`, `max_leaf_nodes`, `ccp_alpha`.
+- **`min_*` ↑ və `max_*` ↓ requlyarlaşdırır.** Seçimi çarpaz validasiya ilə edin.
+- “Aylar” nümunəsi: təlim 100% → 91.9%, test isə 85.6% → 88.9%.
+
+</Section>

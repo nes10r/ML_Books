@@ -1,0 +1,85 @@
+<Section id="clustering">
+
+Məlumatın böyük əksəriyyəti **etiketsizdir**: kamera şəkilləri, sensor ölçmələri, istifadəçi davranışı. Etiketləmək bahalıdır və uzun çəkir. Nəzarətsiz öyrənmə bu nəhəng məlumat “okeanından” etiket olmadan dəyər çıxarmağa imkan verir.
+
+Ən geniş yayılmış nəzarətsiz tapşırıq <Term id="clustering" full />dir: oxşar nümunələri qruplara ayırmaq. Tətbiq sahələri genişdir:
+
+- **müştəri seqmentasiyası** — alış vərdişlərinə görə qruplar, hər qrupa uyğun kampaniya;
+- **məlumatın təhlili** — yeni məlumat dəstini anlamaq üçün əvvəlcə klasterlərə baxmaq;
+- **ölçünün azaldılması** — hər nümunəni klasterlərə yaxınlıq vektoru ilə əvəz etmək;
+- **anomaliya aşkarlanması** — heç bir klasterə yaxın olmayan nümunələr;
+- **yarı-nəzarətli öyrənmə** — etiketin bütün klasterə yayılması;
+- **axtarış** və **şəkil seqmentasiyası**.
+
+“Klaster” anlayışının universal tərifi yoxdur. Fərqli alqoritmlər fərqli növ klasterlər tapır:
+
+<Media id="ch08.media.clustering-shapes" />
+
+</Section>
+
+<Section id="algorithm">
+
+<Term id="k-means" full /> sadə və sürətlidir. Klaster sayı $k$ əvvəlcədən verilir. Hər klaster bir <Term id="centroid" full /> ilə təmsil olunur. Alqoritm iki addımı növbə ilə təkrarlayır:
+
+1. **Təyinat:** hər nöqtə ən yaxın mərkəzin klasterinə bağlanır.
+2. **Yeniləmə:** hər mərkəz öz klasterindəki nöqtələrin **ortasına** köçürülür.
+
+Təyinatlar dəyişməyəndə alqoritm dayanır. Hər iki addım aşağıdakı kəmiyyəti azaldır və ya dəyişməz saxlayır:
+
+$$
+\text{inertia} = \sum_{i=1}^{m} \min_{j}\ \left\lVert \mathbf{x}^{(i)} - \boldsymbol{\mu}_j \right\rVert^2
+$$
+
+Bu kəmiyyət <Term id="inertia" full /> adlanır: nöqtələrlə onların mərkəzləri arasındakı kvadrat məsafələrin cəmi. Inertia aşağıdan sıfırla məhduddur. Ona görə də alqoritm həmişə **sonlu sayda addımda yığılır**, adətən cəmi bir neçə iterasiyada.
+
+Yeni nöqtə üçün proqnoz sadədir: ən yaxın mərkəzin klasteri. Bu, *sərt* klasterləşdirmədir. *Yumşaq* variantda isə hər nöqtənin bütün mərkəzlərə məsafəsi qaytarılır (`transform()`). Bu məsafələr yeni əlamətlər kimi istifadə oluna bilər.
+
+</Section>
+
+<Section id="simulation">
+
+Beş fərqli ölçülü qrupdan ibarət məlumatda k-means-i addım-addım izləyin.
+
+<Demo id="kmeans-steps" />
+
+Təsadüfi başlanğıcla “Yeni başlanğıc” düyməsini bir neçə dəfə basın. Bəzən iki mərkəz eyni qrupa düşür, başqa iki qrup isə bir mərkəzi “bölüşür”. Alqoritm yığılır, lakin **pis yerli minimumda** qalır və inertia yüksək olur. k-means++ rejimində bu, demək olar ki, baş vermir.
+
+</Section>
+
+<Section id="init">
+
+k-means yalnız **yerli** minimuma yığılmağa zəmanət verir. Nəticə başlanğıc mərkəzlərdən asılıdır. Bununla mübarizənin üç yolu var:
+
+1. **Bir neçə dəfə işlətmək** (`n_init`) və ən kiçik inertia-lı nəticəni saxlamaq.
+2. **<Term id="k-means-plus-plus" full />.** Bu, Scikit-Learn-də defolt seçimdir. Birinci mərkəz təsadüfi seçilir. Hər növbəti mərkəz mövcud mərkəzlərə **məsafənin kvadratı ilə mütənasib** ehtimalla seçilir:
+
+$$
+P\left(\mathbf{x}^{(i)}\right) = \frac{D\left(\mathbf{x}^{(i)}\right)^2}{\sum_{j} D\left(\mathbf{x}^{(j)}\right)^2}
+$$
+
+Burada $D(\mathbf{x})$ nöqtədən ən yaxın seçilmiş mərkəzə məsafədir. Mərkəzlər bir-birindən uzaq düşür və pis başlanğıc ehtimalı kəskin azalır.
+
+3. **Mərkəzlərin yerini bilirsinizsə**, onları birbaşa vermək (`init=...`).
+
+Böyük məlumat üçün <Term id="mini-batch-k-means" full /> var. O, hər iterasiyada yalnız kiçik təsadüfi paketdən istifadə edir. Çox sürətlidir və yaddaşa sığmayan məlumatda da işləyir. Bunun qarşılığında inertia bir qədər yüksək olur.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch08.code.kmeans" />
+
+- k-means beş həqiqi mərkəzi (−3, 2.5), (−1.5, −1.5)… çox dəqiq tapır və cəmi **3 iterasiyada** yığılır.
+- 20 tək təsadüfi başlanğıcdan **8-i** pis yerli minimuma düşür: inertia 1 411-ə qədər çatır, ən yaxşısı isə 547-dir. k-means++ ilə 20 başlanğıcın **heç biri** pis nəticə vermir.
+- MiniBatchKMeans 549.0 inertia verir. Bu, tam k-means-in nəticəsinə (547.2) çox yaxındır.
+
+</Section>
+
+<Section id="summary">
+
+- **k-means:** təyinat (ən yaxın mərkəz) və yeniləmə (orta) addımları növbələşir. Inertia azalır və alqoritm yığılır.
+- Yalnız **yerli minimum** zəmanətlidir. **k-means++** və `n_init` pis başlanğıcların qarşısını alır.
+- Proqnoz ən yaxın mərkəzin klasteridir. `transform()` isə mərkəzlərə məsafələri verir.
+- Böyük məlumat üçün **MiniBatchKMeans**.
+
+</Section>

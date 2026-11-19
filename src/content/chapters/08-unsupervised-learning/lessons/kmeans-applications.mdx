@@ -1,0 +1,58 @@
+<Section id="limits">
+
+k-means sürətli və miqyaslana biləndir, lakin klaster haqqında güclü fərziyyə edir: klaster bir mərkəz ətrafında **dəyirmi** qrupdur. Bu fərziyyə pozulduqda k-means səhv edir:
+
+- **Uzunsov və ya maili klasterlər.** k-means onları mərkəzə görə kəsir və formanı “görmür”.
+- **Fərqli ölçülü və sıxlıqlı klasterlər.** Böyük, seyrək klasterin kənarı kiçik, sıx klasterin mərkəzinə yaxın düşə bilər və nöqtələr səhv təyin olunur.
+- **Qeyri-qabarıq formalar** (aylar, halqalar). k-means burada tamamilə uğursuz olur (DBSCAN dərsi).
+- **Miqyaslanmamış əlamətlər.** Evklid məsafəsi böyük miqyaslı əlamətə üstünlük verir. k-means-dən əvvəl həmişə miqyaslayın.
+- **$k$-nı bilmək lazımdır**, nəticə isə başlanğıcdan asılıdır.
+
+Bu hallarda DBSCAN və ya Qauss qarışıqları daha uyğun ola bilər (növbəti dərslər). Bununla belə, k-means bir neçə tətbiqdə çox güclüdür.
+
+</Section>
+
+<Section id="segmentation">
+
+<Term id="image-segmentation" full /> şəkli hissələrə bölməkdir. Ən sadə formasında, *rəng seqmentasiyasında*, oxşar rəngli piksellər bir seqmentə düşür. k-means bunu təbii şəkildə edir:
+
+1. Şəkil $h \times w \times 3$ massivdən $(h \cdot w) \times 3$ RGB cədvəlinə çevrilir.
+2. Piksellər rənglərinə görə $k$ klasterə bölünür.
+3. Hər piksel öz klaster mərkəzinin rəngi ilə əvəz olunur.
+
+Nəticə $k$ rəngli palitradır. Python nümunəsində proqramla çəkilmiş “dəniz mənzərəsi” istifadə olunur: göy, günəş, dəniz və qum.
+
+- **2 rəng:** göy ilə dəniz bir-birinə qarışır, günəş itir. Orta rəng xətası 0.112-dir.
+- **4 rəng:** günəş artıq **ayrı seqmentdir**, xəta 0.037-yə enir.
+- **8 rəng:** səmanın qradiyenti də bir neçə zolağa bölünür, xəta 0.023 olur.
+
+Bu üsul rəng sıxılması üçün də istifadə olunur, məsələn GIF-in 256 rəngli palitrası kimi. Obyektlərin mənaya görə seqmentasiyası isə neyron şəbəkələr tələb edir (Fəsil 12).
+
+</Section>
+
+<Section id="semi-supervised">
+
+Klasterləşdirmənin ən praktik tətbiqlərindən biri <Term id="semi-supervised-learning" full />dir: çoxlu etiketsiz və az etiketli nümunə olduqda. Tutaq ki, 1 437 rəqəm şəklindən yalnız **50-ni** etiketləməyə vaxtımız var:
+
+1. **Baza:** 50 **təsadüfi** şəkli etiketləyib logistik reqressiya öyrədirik. Test dəqiqliyi **0.861**-dir.
+2. **Nümayəndələr:** şəkilləri k-means ilə 50 klasterə bölürük və hər klasterin **mərkəzə ən yaxın** şəklini seçirik. İnsan yalnız bu 50 “tipik” şəkli etiketləyir. Dəqiqlik **0.922**-yə qalxır. Etiket sayı eynidir, sadəcə daha ağıllı seçilib.
+3. **<Term id="label-propagation" full />:** hər nümayəndənin etiketini **bütün klasterinə** yayırıq və modeli 1 437 şəkildə öyrədirik. Bu misalda dəqiqlik eynidir, 0.922. Yayılmış etiketlərin 95.5%-i düzgündür, səhvlər isə klaster sərhədlərindədir. Yalnız mərkəzə yaxın nöqtələrə yaymaq daha təmiz nəticə verə bilər.
+
+Növbəti addım **aktiv öyrənmədir**: model ən az əmin olduğu nümunələri insana göstərir, insan onları etiketləyir və model yenidən öyrədilir. Bu dövr dəqiqlik artmağı dayandırana qədər təkrarlanır.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch08.code.applications" />
+
+</Section>
+
+<Section id="summary">
+
+- k-means **dəyirmi, oxşar ölçülü** klasterlər fərz edir. Uzunsov, qeyri-qabarıq və ya fərqli sıxlıqlı klasterlərdə səhv edir. **Miqyaslayın.**
+- **Rəng seqmentasiyası:** piksellər rənglərə görə klasterlənir. 4 rənglə günəş artıq ayrı seqmentdir.
+- **Yarı-nəzarətli öyrənmə:** 50 nümayəndə şəkil 50 təsadüfi şəkildən xeyli yaxşıdır (0.861 → 0.922).
+- **Etiketlərin yayılması** və **aktiv öyrənmə** etiketləmə xərclərini daha da azaldır.
+
+</Section>

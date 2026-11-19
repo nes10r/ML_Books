@@ -1,0 +1,106 @@
+<Section id="generalization-error">
+
+Modelin yeni məlumatda necə işləyəcəyini bilməyin yeganə etibarlı yolu onu **yeni məlumatda sınamaqdır**. Lakin modeli birbaşa istifadəçilərin üzərində sınamaq risklidir. Ona görə də məlumatı əvvəlcədən iki hissəyə bölürük:
+
+- **Təlim dəsti** — model bu hissədən öyrənir;
+- <Term id="test-set" full /> — model bu hissəni təlimdə heç vaxt görmür. Yalnız ən sonda yoxlama üçün istifadə olunur.
+
+Modelin yeni nümunələrdə etdiyi xətanın dərəcəsi <Term id="generalization-error" full /> adlanır. Test dəstindəki xəta onun qiymətləndirilməsidir.
+
+Adətən məlumatın **80%-i təlimə, 20%-i testə** ayrılır. Lakin bu, məlumatın həcmindən asılıdır. 10 milyon nümunədə 1% test dəsti (100 000 nümunə) belə kifayətdir.
+
+<Callout variant="insight">
+Təlim xətası aşağı, ümumiləşdirmə xətası isə yüksəkdirsə, bu, overfitting deməkdir. Test dəsti olmadan bunu heç vaxt bilməzdik.
+</Callout>
+
+</Section>
+
+<Section id="holdout">
+
+Tutaq ki, iki model (məsələn, xətti reqressiya və k-NN) və ya eyni modelin bir neçə hiperparametr qiyməti arasında seçim etməliyik. Sadə görünən həll budur: hamısını test dəstində sınayıb ən yaxşısını götürmək. **Bu, səhvdir.**
+
+Test dəstində yüzlərlə variant sınasanız, sonda test dəstinə ən yaxşı uyğunlaşan variantı seçmiş olursunuz. Yəni test dəsti gizli şəkildə təlimin bir hissəsinə çevrilir. Model istifadəyə veriləndə gözləniləndən pis işləyir.
+
+Düzgün prosedur **validasiya dəsti** ilə qurulur:
+
+<Media id="ch01.media.data-split" />
+
+1. Məlumatı təlim və test hissələrinə bölün. Test dəstini “kilidləyin”.
+2. Təlim hissəsindən kiçik bir hissəni <Term id="validation-set" full /> kimi ayırın.
+3. Bütün namizəd modelləri və <Term id="hyperparameter" />ləri **azaldılmış təlim dəstində** öyrədin və **validasiya dəstində** müqayisə edin.
+4. Ən yaxşı variantı seçin və onu **tam təlim dəsti** (təlim + validasiya) ilə yenidən öyrədin.
+5. Son modeli test dəstində **bir dəfə** qiymətləndirin. Bu rəqəm ümumiləşdirmə xətasının qiymətləndirilməsidir.
+
+</Section>
+
+<Section id="cross-validation">
+
+Validasiya dəsti çox kiçik olarsa, qiymətləndirmə qeyri-dəqiq olur. Çox böyük olarsa, təlimə az məlumat qalır. <Term id="cross-validation" full /> bu dilemmanı həll edir.
+
+**k qatlı çarpaz validasiyada** təlim dəsti $k$ bərabər hissəyə (qata) bölünür. Hər turda bir qat validasiya, qalan $k-1$ qat isə təlim üçün istifadə olunur. Nəticə bütün turların ortasıdır:
+
+$$
+\text{CV}_{(k)} = \frac{1}{k} \sum_{j=1}^{k} E_j
+$$
+
+Burada $E_j$ — modelin $j$-ci qatı kənarda saxlayıb qalanları ilə öyrədildikdə həmin qatdakı xətasıdır.
+
+**Üstünlükləri:**
+
+- Hər nümunə həm təlimdə, həm də validasiyada (fərqli turlarda) iştirak edir;
+- Turlar arasında nəticənin **yayılmasını** (standart kənarlaşmasını) da görürük. Bu, qiymətləndirmənin nə qədər etibarlı olduğunu göstərir.
+
+**Çatışmazlığı:** təlim $k$ dəfə təkrarlanır, ona görə də hesablama baxımından baha başa gəlir.
+
+</Section>
+
+<Section id="data-mismatch">
+
+Bəzən böyük həcmdə məlumat toplamaq asandır, lakin o, istifadə zamanı rast gələcəyimiz məlumata **tam bənzəmir**.
+
+**Ssenari:** bitki növlərini tanıyan mobil tətbiq hazırlayırsınız. Vebdən milyonlarla bitki şəkli yükləmək asandır. Tətbiqdə isə istifadəçilər telefonla, pis işıqda, bulanıq şəkillər çəkəcəklər. Telefonla çəkilmiş cəmi 5 000 şəkliniz var.
+
+Burada qızıl qayda belədir: **validasiya və test dəstləri istifadə zamanı gözlənilən məlumatı mümkün qədər yaxşı təmsil etməlidir**. Yəni onlar yalnız mobil şəkillərdən ibarət olmalıdır.
+
+Lakin model validasiya dəstində zəif işləsə, səbəbi necə bilək? Overfitting-dir, yoxsa <Term id="data-mismatch" full />? Bunu ayırd etmək üçün veb şəkillərinin bir hissəsini **train-dev** dəsti kimi saxlayırıq:
+
+| Nəticə | Diaqnoz |
+|---|---|
+| Train-dev dəstində zəif | Model təlim məlumatına overfit olub: sadələşdir, requlyarlaşdır |
+| Train-dev-də yaxşı, validasiyada zəif | Məlumat uyğunsuzluğu: veb şəkillərini mobil şəkillərə bənzət (məs. emal yolu ilə) |
+| Hər ikisində yaxşı | Test dəstində son yoxlama |
+
+</Section>
+
+<Section id="python">
+
+Aşağıdakı kod düzgün iş axınını göstərir. Test dəsti əvvəlcədən ayrılır, modellər çarpaz validasiya ilə müqayisə edilir və seçilmiş model test dəstində yalnız bir dəfə yoxlanılır:
+
+<PythonExample id="ch01.code.validation" />
+
+<Callout variant="tip">
+Scikit-Learn-də `scoring="neg_root_mean_squared_error"` istifadə olunur, çünki kitabxana həmişə “daha böyük = daha yaxşı” məntiqi ilə işləyir. Ona görə nəticəni mənfi işarə ilə alırıq və yenidən müsbətə çeviririk.
+</Callout>
+
+</Section>
+
+<Section id="no-free-lunch">
+
+Model, əslində, məlumatın **sadələşdirilmiş təsviridir**. Sadələşdirmə nəyi atacağımızı seçməkdir, bu seçim isə **fərziyyələrə** əsaslanır. Xətti model əlaqənin xətti olduğunu, k-NN isə oxşar girişlərin oxşar çıxış verdiyini fərz edir.
+
+“Pulsuz nahar yoxdur” (*No Free Lunch*) teoremi göstərir ki, məlumat haqqında heç bir fərziyyə etməsək, **heç bir modelin digərindən əvvəlcədən üstün olduğunu demək olmaz**. Bəzi məlumatlarda xətti model, digərlərində neyron şəbəkə daha yaxşıdır.
+
+Praktiki nəticə belədir: bütün modelləri sınamaq mümkün deyil. Ona görə də məlumat haqqında ağlabatan fərziyyələr edirik, bir neçə uyğun modeli seçirik və onları **validasiya ilə obyektiv müqayisə** edirik.
+
+</Section>
+
+<Section id="summary">
+
+- **Test dəsti** ümumiləşdirmə xətasını qiymətləndirir. Ondan yalnız ən sonda, bir dəfə istifadə edin.
+- **Validasiya dəsti** və ya **çarpaz validasiya** model və hiperparametr seçimi üçündür.
+- Validasiya və test dəstləri **real istifadə məlumatını** təmsil etməlidir. Train-dev dəsti overfitting-i məlumat uyğunsuzluğundan ayırır.
+- **Pulsuz nahar yoxdur:** ən yaxşı modeli yalnız qiymətləndirmə ilə tapmaq olar.
+
+Təbriklər! Fəsil 1-i tamamladınız. Bilikləri möhkəmləndirmək üçün [fəslin yekun testini](/exercises/ch01.quiz.final) həll edin.
+
+</Section>

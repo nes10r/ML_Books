@@ -1,0 +1,97 @@
+<Section id="impurity">
+
+Ağac hansı sualı verəcəyini necə seçir? Məqsəd **mümkün qədər “təmiz” uşaq düyünlər** yaratmaqdır, yəni hər düyündə bir sinif üstünlük təşkil etsin. Bunun üçün “qarışıqlığı” ölçmək lazımdır.
+
+**<Term id="gini-impurity" full />.** $i$-ci düyün üçün:
+
+$$
+G_i = 1 - \sum_{k=1}^{n} p_{i,k}^2
+$$
+
+Burada $p_{i,k}$ $i$-ci düyündəki təlim nümunələri arasında $k$ sinfinin payıdır.
+
+- Bütün nümunələr bir sinifdəndirsə, $G = 1 - 1^2 = 0$, yəni düyün təmizdir.
+- Üç sinif bərabər paylanıbsa, kök düyündəki kimi, $G = 1 - 3 \cdot (1/3)^2 \approx 0.667$.
+- Sol düyün [44, 3, 0] üçün $G = 1 - (44/47)^2 - (3/47)^2 \approx 0.120$.
+
+**<Term id="entropy" full />.** İnformasiya nəzəriyyəsindən gələn alternativ ölçüdür:
+
+$$
+H_i = -\sum_{k:\ p_{i,k} > 0} p_{i,k} \log_2 p_{i,k}
+$$
+
+Təmiz düyündə entropiya 0-dır. Kök düyündə bu, $\log_2 3 \approx 1.585$ bitdir. Entropiya bir mesajın orta “sürpriz” miqdarını ölçür: hamısı eyni sinifdəndirsə, sürpriz yoxdur.
+
+<Media id="ch05.media.impurity" />
+
+</Section>
+
+<Section id="cart">
+
+Scikit-Learn ağacları <Term id="cart-algorithm" full /> ilə öyrədir. İdeya sadədir:
+
+1. Bir əlamət $k$ və hədd $t_k$ seçilir, məsələn “çəki ≤ 85.8”.
+2. Təlim dəsti iki hissəyə bölünür: bu şərti ödəyənlər və ödəməyənlər.
+3. $(k, t_k)$ cütü **ən təmiz** uşaq düyünləri verəcək şəkildə seçilir. Bunun üçün aşağıdakı xərc funksiyası minimallaşdırılır:
+
+$$
+J(k, t_k) = \frac{m_{\text{sol}}}{m} G_{\text{sol}} + \frac{m_{\text{sag}}}{m} G_{\text{sag}}
+$$
+
+Burada $m_{\text{sol}}$, $m_{\text{sag}}$ uşaq düyünlərdəki nümunə sayı, $G$ isə onların qeyri-müəyyənliyidir. Böyük uşaq düyün daha çox çəki alır.
+
+4. Eyni proses hər uşaq düyündə **rekursiv** təkrarlanır.
+5. Maksimal dərinliyə (`max_depth`) çatdıqda, qeyri-müəyyənliyi azaldan bölgü tapılmadıqda və ya digər məhdudiyyətlər işə düşdükdə proses dayanır.
+
+CART <Term id="greedy-algorithm" full />dir. O, hər düyündə **yalnız o an** ən yaxşı bölgünü seçir və iki-üç səviyyə aşağıda daha yaxşı nəticə verəcək bölgüləri axtarmır. Optimal ağacı tapmaq NP-tam məsələdir: məlumat böyüdükcə hesablama vaxtı eksponensial artır. Ona görə də “kifayət qədər yaxşı” həll ilə kifayətlənirik.
+
+</Section>
+
+<Section id="simulation">
+
+CART-ın kök düyündə etdiyi işi əl ilə təkrarlayın. Hər mümkün hədd üçün iki tərəfin Gini-sini və onların çəkili ortasını görəcəksiniz.
+
+<Demo id="split-finder" />
+
+Çəkili Gini əyrisi kök qiymətindən başlayır, aşağı enir və yenidən qalxır. Ən aşağı nöqtə **ən yaxşı həddir**. Hər iki əlaməti yoxlayın: CART kökdə bütün əlamətlər arasından ən kiçik xərcli bölgünü seçir.
+
+</Section>
+
+<Section id="complexity">
+
+**Proqnoz** çox sürətlidir. Kökdən yarpağa qədər bir yol keçilir. Təxminən balanslaşdırılmış ağacın dərinliyi $O(\log_2 m)$-dir, ona görə 1 milyon nümunəli dəstdə belə cəmi ~20 düyün yoxlanılır. Hər düyündə yalnız bir əlamət müqayisə olunur, buna görə də proqnoz əlamət sayından asılı deyil.
+
+**Təlim** daha bahalıdır. Hər səviyyədə bütün nümunələr bütün $n$ əlamət üzrə yoxlanılır. Bu, təxminən $O(n \times m \log_2 m)$ deməkdir. Məlumat böyüdükcə təlim vaxtı nəzərəçarpacaq artır, lakin yenə də praktikdir.
+
+</Section>
+
+<Section id="gini-vs-entropy">
+
+Defolt olaraq Gini istifadə olunur, lakin `criterion="entropy"` ilə entropiyaya keçmək olar. Hansını seçmək lazımdır?
+
+- Əksər hallarda **fərq çox kiçikdir**: hər ikisi oxşar ağaclar qurur.
+- **Gini** bir az sürətlidir, çünki loqarifm hesablamır. Ona görə də defolt seçimdir.
+- Fərq olduqda Gini ən çox rast gələn sinfi öz qoluna təcrid etməyə meyillidir. Entropiya isə bir qədər daha balanslı ağaclar qurur.
+
+Bizim meyvə məlumatında hər iki meyar kökdə **eyni bölgünü** seçir (çəki ≤ 85.8). Tam böyüdülmüş ağaclar da oxşardır: hər ikisində 25 yarpaq var, dərinlik isə 8 və 10-dur.
+
+</Section>
+
+<Section id="python">
+
+Kök düyünün ən yaxşı bölgüsünü əl ilə, bütün hədləri yoxlayaraq tapırıq və nəticəni Scikit-Learn-in CART ilə müqayisə edirik:
+
+<PythonExample id="ch05.code.cart" />
+
+Əl ilə tapdığımız bölgü (çəki ≤ 85.80, çəkili Gini 0.374) Scikit-Learn ilə **tam eynidir**. Bu dərsin demoları da brauzerdə eyni alqoritmlə işləyir: CART-ın JavaScript versiyası bu fəslin demolarının arxasındadır.
+
+</Section>
+
+<Section id="summary">
+
+- **Gini** $= 1 - \sum p_k^2$, **entropiya** $= -\sum p_k \log_2 p_k$. Təmiz düyündə hər ikisi 0-dır.
+- **CART** hər düyündə çəkili qeyri-müəyyənliyi minimallaşdıran $(k, t_k)$ cütünü seçir və rekursiv bölür.
+- CART **acgözdür**: sürətlidir, lakin optimal ağacı zəmanət etmir.
+- Proqnoz $O(\log_2 m)$, təlim isə təxminən $O(n \times m \log_2 m)$-dir. Gini ilə entropiya adətən oxşar nəticə verir.
+
+</Section>

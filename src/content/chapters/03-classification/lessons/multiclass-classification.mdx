@@ -1,0 +1,63 @@
+<Section id="strategies">
+
+İndi əsl tapşırığa qayıdırıq: şəkli 10 rəqəmdən birinə aid etmək. Bu, <Term id="multiclass-classification" full />dır.
+
+Bəzi alqoritmlər (təsadüfi meşə, k-NN, logistik reqressiya) çoxsinifli təsnifatı təbii şəkildə edir. Digərləri (məsələn, SVM) isə əslində yalnız ikili təsnifat edir. Onları çoxsinifli etməyin iki strategiyası var:
+
+<Media id="ch03.media.ovr-ovo" />
+
+**<Term id="one-vs-rest" full />.** Hər rəqəm üçün bir ikili təsnifatçı öyrədilir: “0 detektoru”, “1 detektoru”, …, “9 detektoru”. Yeni şəkil üçün hamısı bal verir və **ən yüksək bal** qalib gəlir. 10 sinif üçün 10 təsnifatçı lazımdır.
+
+**<Term id="one-vs-one" full />.** Hər rəqəm **cütü** üçün ayrıca təsnifatçı öyrədilir: “0 yoxsa 1?”, “0 yoxsa 2?”, …, “8 yoxsa 9?”. Bunlar $K(K-1)/2 = 45$ təsnifatçıdır. Şəkil hamısından keçir və **ən çox səs** alan sinif qalib gəlir.
+
+OvO-da təsnifatçı çoxdur, lakin hər biri məlumatın yalnız kiçik hissəsində, iki sinifdə öyrənir. Məlumat böyüdükcə pis miqyaslanan alqoritmlər üçün (məsələn, SVM) bu, daha sürətlidir. Əksər digər alqoritmlər üçün OvR üstünlük təşkil edir.
+
+</Section>
+
+<Section id="sklearn-auto">
+
+Scikit-Learn ikili alqoritmi çoxsinifli tapşırıqda gördükdə uyğun strategiyanı **özü seçir**:
+
+```python
+svm_clf = SVC(random_state=42)
+svm_clf.fit(X_train, y_train)          # y_train: 0–9, y_train_5 deyil!
+svm_clf.predict(X_train[:1])           # array([5])
+svm_clf.decision_function(X_train[:1]) # 10 bal — hər sinif üçün bir
+```
+
+`SVC` daxildə OvO ilə 45 təsnifatçı öyrədir. Ballar isə hər sinfin topladığı səslərə əsaslanır və ən yüksəyi (9.29) 5-ə aiddir. Strategiyanı məcburi təyin etmək üçün modeli `OneVsRestClassifier` və ya `OneVsOneClassifier` ilə bükmək olar.
+
+Çoxsinifli `SGDClassifier` isə OvR istifadə edir. Fəsil 2-də öyrəndiyimiz **miqyaslama** burada da kömək edir:
+
+| Model | 3 qatlı CV dəqiqliyi |
+|---|---|
+| SGD (xam piksellər) | 92.2% |
+| SGD + StandardScaler | 94.3% |
+| SVC | **98.3%** |
+
+</Section>
+
+<Section id="simulation">
+
+İndi növbə sizindir. Aşağıdakı lövhəyə rəqəm çəkin. k-NN təsnifatçısı 1 437 təlim şəkli arasında piksel-piksel ən oxşar şəkilləri tapır və səsverməyə qoyur. k-NN ikili deyil, təbii çoxsinifli alqoritmdir. Hər qonşu öz sinfinə bir səs verir.
+
+<Demo id="digit-draw" />
+
+“Test şəkli” düyməsi modelin **görmədiyi** 360 şəkildən birini yükləyir. Bu şəkillərdə k-NN (k = 5) təxminən 98% dəqiqlik göstərir. Öz çəkdiyiniz rəqəmlərdə isə nəticə zəif ola bilər. Niyə? Təlim şəkilləri mərkəzləşdirilib, müəyyən qalınlıqda və müəyyən üslubda yazılıb. Sizin rəqəminiz fərqli “paylanmadan” gəlir. Bu, Fəsil 1-də öyrəndiyimiz **məlumat uyğunsuzluğudur**.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch03.code.multiclass" />
+
+</Section>
+
+<Section id="summary">
+
+- Çoxsinifli təsnifat: K sinif. Bəzi alqoritmlər bunu təbii edir, ikili alqoritmlər isə **OvR** (K təsnifatçı) və ya **OvO** (K(K−1)/2 təsnifatçı) ilə edir.
+- Scikit-Learn strategiyanı **avtomatik** seçir: SVC üçün OvO, SGD üçün OvR.
+- Miqyaslama SGD-ni 92.2%-dən 94.3%-ə, SVC isə 98.3%-ə çatdırır.
+- Öz çəkdiyiniz rəqəmlər **məlumat uyğunsuzluğunu** canlı göstərir.
+
+</Section>

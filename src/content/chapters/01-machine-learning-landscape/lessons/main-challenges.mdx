@@ -1,0 +1,128 @@
+<Section id="bad-data">
+
+ML layihəsində iki şey səhv gedə bilər: **pis məlumat** və ya **pis model**. Əvvəlcə məlumatdan başlayaq. Çünki praktikada problemlərin böyük hissəsi elə buradan qaynaqlanır.
+
+### 1. Kifayət etməyən məlumat
+
+Uşaq bir neçə alma görüb almanı tanımağı öyrənir. ML alqoritmləri isə hələ ki, o qədər səmərəli deyil. Sadə tapşırıqlar üçün minlərlə, şəkil və nitq tanıma kimi mürəkkəb tapşırıqlar üçün milyonlarla nümunə lazım ola bilər. Tədqiqatlar göstərib ki, kifayət qədər məlumat olduqda çox fərqli alqoritmlər oxşar nəticə verir. Yəni **məlumat çox vaxt alqoritmdən daha vacibdir**. Bununla belə, məlumat toplamaq heç də həmişə ucuz başa gəlmir. Ona görə də alqoritm seçimini də nəzərdən qaçırmaq olmaz.
+
+### 2. Qeyri-reprezentativ məlumat
+
+Yaxşı ümumiləşdirmə üçün təlim məlumatı ümumiləşdirmək istədiyimiz halları **düzgün təmsil etməlidir**.
+
+- Az nümunədə təsadüfən qeyri-tipik hallar üstünlük təşkil edə bilər. Buna *seçmə küyü* deyilir.
+- Böyük nümunədə də toplama üsulu səhvdirsə, <Term id="sampling-bias" full /> yaranır. Məsələn, mənzil qiymətlərini yalnız mərkəzdəki agentliklərdən toplasaq, model kənar rayonlarda sistematik olaraq yüksək qiymət proqnozlaşdıracaq.
+
+<Callout variant="warning" title="Real nümunə">
+Sorğunu yalnız smartfon tətbiqi ilə keçirsəniz, smartfondan istifadə etməyən insanların fikri nəticədə əks olunmayacaq. Nümunə nə qədər böyük olsa da, bu qərəz aradan qalxmır.
+</Callout>
+
+### 3. Keyfiyyətsiz məlumat
+
+Səhvlər, kənar qiymətlər (*outliers*) və ölçmə küyü modelin qanunauyğunluğu görməsini çətinləşdirir. Məlumat təmizliyinə vaxt ayırmaq faydalı investisiyadır:
+
+- açıq-aşkar səhv nümunələri düzəltmək və ya atmaq;
+- çatışmayan qiymətlərlə bağlı qərar vermək: əlaməti atmaq, nümunəni atmaq və ya boşluğu doldurmaq (məsələn, median ilə).
+
+### 4. Əhəmiyyətsiz əlamətlər
+
+“Zibil daxil olsa, zibil çıxar.” Model yalnız kifayət qədər faydalı əlamət olduqda yaxşı öyrənir. <Term id="feature-engineering" full /> bu işdə əsas rol oynayır:
+
+- **Əlamət seçimi:** ən faydalı əlamətləri saxlamaq;
+- **Əlamət çıxarma:** mövcudlardan daha faydalı əlamət yaratmaq (məsələn, “qiymət / m²”);
+- **Yeni məlumat toplamaq:** lazım olan informasiya ümumiyyətlə yoxdursa.
+
+</Section>
+
+<Section id="overfitting">
+
+İndi “pis model” tərəfinə keçək. Səyahətdə bir taksi sürücüsü sizi aldadıbsa, “bu şəhərdə bütün taksi sürücüləri fırıldaqçıdır” demək cazibədardır. Bu, həddən artıq ümumiləşdirmədir. Maşınlar da eyni tələyə düşə bilər.
+
+<Term id="overfitting" full /> modelin təlim məlumatında əla, yeni məlumatda isə zəif işləməsidir. Model həddən artıq mürəkkəb olduqda əsas qanunauyğunluqla yanaşı **təsadüfi küyü də əzbərləyir**.
+
+Bir əlamət: model təlim məlumatındakı təsadüfi detallara əsaslanan, real dünyada heç bir mənası olmayan qanunauyğunluqlar “tapır”. Məsələn, kiçik bir mağaza məlumatında “telefon nömrəsi 7 ilə bitən müştərilər daha çox alış edir” kimi təsadüfi bir əlaqə.
+
+Overfitting-in qarşısını almaq üçün:
+
+- **Modeli sadələşdirmək:** daha az parametrli model, daha az əlamət;
+- **Daha çox təlim məlumatı toplamaq;**
+- **Küyü azaltmaq:** səhvləri düzəltmək, kənar qiymətləri təmizləmək;
+- **Modeli məhdudlaşdırmaq:** requlyarlaşdırma (növbəti bölmə).
+
+</Section>
+
+<Section id="simulation">
+
+Polinom reqressiyada dərəcə modelin mürəkkəbliyini idarə edir. Dərəcə 1 düz xətdir, dərəcə 12 isə istənilən əyriliyə qadir olan, çox elastik bir funksiyadır. Dolu nöqtələr modelin öyrəndiyi təlim dəsti, boş nöqtələr isə modelin görmədiyi validasiya dəstidir.
+
+<Demo id="overfitting-polynomial" />
+
+Eksperimentlər:
+
+1. Dərəcəni 1-dən 12-yə qədər tədricən artırın. Aşağıdakı qrafikdə **təlim** xətası daim azalır, **validasiya** xətası isə əvvəlcə azalıb sonra kəskin artır. Bu “U” formalı əyri ML-in ən vacib şəkillərindən biridir.
+2. Dərəcə 12-də $\lambda$-nı tədricən artırın. Əyri necə “sakitləşir”?
+3. Validasiya xətasının minimum olduğu dərəcəni tapın. Bu, **model seçimi**dir.
+
+</Section>
+
+<Section id="regularization">
+
+<Term id="regularization" full /> modeli sadələşdirmək üçün ona məhdudiyyət qoymaqdır. Ən geniş yayılmış formada xərc funksiyasına parametrlərin böyüklüyünə görə **cərimə** əlavə edirik (*Ridge*, L2 requlyarlaşdırma):
+
+$$
+J(\boldsymbol{\theta}) = \underbrace{\frac{1}{m}\sum_{i=1}^{m}\left(\hat{y}^{(i)} - y^{(i)}\right)^2}_{\text{(1)}} + \underbrace{\lambda \sum_{j=1}^{n} \theta_j^2}_{\text{(2)}}
+$$
+
+Birinci hissə (1) modelin məlumata uyğunluğunu ölçür, ikinci hissə (2) isə mürəkkəbliyə görə cərimədir.
+
+- $\lambda = 0$: requlyarlaşdırma yoxdur. Model istədiyi qədər “əyilə” bilər.
+- Böyük $\lambda$: parametrlər sıfıra doğru sıxılır, model hamarlaşır. Çox böyük $\lambda$ isə modeli o qədər sadələşdirir ki, o, düz xəttə yaxınlaşır.
+
+$\lambda$ özü də bir <Term id="hyperparameter" full />dir: öyrənmə alqoritmi onu dəyişmir, biz təlimdən əvvəl təyin edirik. Ən yaxşı qiyməti validasiya ilə tapırıq.
+
+</Section>
+
+<Section id="underfitting">
+
+<Term id="underfitting" full /> overfitting-in əksidir: model məlumatdakı əsas strukturu belə tuta bilməyəcək qədər **sadədir**. Simulyasiyada dərəcə 1 bunun nümunəsidir: düz xətt sinusoidal formanı heç cür izləyə bilmir. Nəticədə həm təlim, həm də validasiya xətası yüksək olur.
+
+Həll yolları:
+
+- **Daha güclü model** seçmək (daha çox parametr);
+- **Daha yaxşı əlamətlər** vermək (əlamət mühəndisliyi);
+- **Məhdudiyyətləri azaltmaq** (məsələn, $\lambda$-nı kiçiltmək).
+
+| Diaqnoz | Təlim xətası | Validasiya xətası | Nə etməli |
+|---|---|---|---|
+| Underfitting | Yüksək | Yüksək | Mürəkkəbliyi artır, əlamətləri yaxşılaşdır |
+| Yaxşı balans | Aşağı | Aşağı (təlimə yaxın) | Test dəstində yoxla |
+| Overfitting | Çox aşağı | Yüksək | Sadələşdir, requlyarlaşdır, məlumat topla |
+
+</Section>
+
+<Section id="python">
+
+Scikit-Learn ilə eyni eksperimenti real kitabxana kodu ilə təkrarlayaq. Diqqət edin: 11-ci dərəcədə təlim xətası 0-a enir, validasiya xətası isə yüzlərlə dəfə artır. Ridge requlyarlaşdırması isə vəziyyəti xilas edir:
+
+<PythonExample id="ch01.code.overfitting" />
+
+</Section>
+
+<Section id="mistakes">
+
+- **Yalnız təlim xətasına baxmaq.** Aşağı təlim xətası overfitting-i gizlədə bilər. Həmişə modelin görmədiyi məlumatda yoxlayın.
+- **“Daha çox parametr = daha yaxşı” düşüncəsi.** Mürəkkəblik yalnız validasiya xətasını azaltdıqca faydalıdır.
+- **Seçmə qərəzini daha çox məlumatla həll etməyə çalışmaq.** Toplama üsulu səhvdirsə, məlumatın miqdarı problemi aradan qaldırmır.
+- **Məlumat təmizliyini sona saxlamaq.** Təmizləmə modelləşdirmədən əvvəl gəlir. Kənar qiymətlər həm parametrləri, həm də metrikaları təhrif edir.
+- **İstifadəyə vermə mərhələsini unutmaq.** Model istifadəyə verildikdən sonra da monitorinq, yenidən təlim və infrastruktur tələb edir.
+
+</Section>
+
+<Section id="summary">
+
+- Məlumat problemləri: **az, qeyri-reprezentativ, keyfiyyətsiz məlumat və əhəmiyyətsiz əlamətlər**.
+- **Overfitting:** model küyü əzbərləyir. Təlim xətası aşağı, validasiya xətası yüksəkdir.
+- **Underfitting:** model çox sadədir. Hər iki xəta yüksəkdir.
+- **Requlyarlaşdırma** ($\lambda$) mürəkkəbliyi məhdudlaşdırır. Optimal səviyyə validasiya ilə seçilir.
+
+</Section>

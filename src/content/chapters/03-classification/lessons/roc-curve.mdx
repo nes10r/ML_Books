@@ -1,0 +1,74 @@
+<Section id="roc">
+
+PR əyrisi ilə yanaşı ikili təsnifatçıların ikinci əsas aləti <Term id="roc-curve" full />dir. O, hər mümkün hədd üçün iki nisbəti göstərir:
+
+- **TPR** (düzgün müsbət nisbəti, recall) — həqiqi 5-lərin neçə faizi tutulub;
+- **FPR** (yanlış müsbət nisbəti) — həqiqi “5 deyil”lərin neçə faizi səhvən “5” sayılıb:
+
+$$
+\text{FPR} = \frac{FP}{FP + TN}
+$$
+
+Hədd çox yüksək olduqda heç nə “5” sayılmır və nöqtə (0, 0)-da olur. Hədd azaldıqca nöqtə yuxarı və sağa hərəkət edir, hədd çox aşağı olduqda isə (1, 1)-ə çatır. Yaxşı model əvvəlcə **sürətlə yuxarı qalxır**: az yanlış həyəcanla çoxlu 5 tutur. Ona görə də əyrisi sol yuxarı küncə sıxılır.
+
+Diaqonal xətt təsadüfi təxmindir: yazı-tura atmaq kimi.
+
+</Section>
+
+<Section id="auc">
+
+İki ROC əyrisini tək rəqəmlə müqayisə etmək üçün əyri altındakı sahəni hesablayırıq: <Term id="auc" full />.
+
+- **AUC = 1:** mükəmməl ayırma. Bütün müsbətlər bütün mənfilərdən yüksək bal alır.
+- **AUC = 0.5:** təsadüfi təxmin.
+
+AUC-un gözəl ehtimal mənası var: **təsadüfi seçilmiş müsbət nümunənin təsadüfi seçilmiş mənfi nümunədən daha yüksək bal alma ehtimalıdır**:
+
+$$
+\text{AUC} = P\big(s(\mathbf{x}^{+}) > s(\mathbf{x}^{-})\big)
+$$
+
+Ona görə AUC **həddən asılı deyil**. O, modelin ballarının sıralama keyfiyyətini ölçür.
+
+</Section>
+
+<Section id="simulation">
+
+İki modeli müqayisə edək: SGD və təsadüfi meşə. Təsadüfi meşənin `decision_function()` metodu yoxdur, lakin `predict_proba()` hər sinfin ehtimalını verir. “5” ehtimalını bal kimi istifadə edirik.
+
+<Demo id="roc-compare" />
+
+| Model | ROC AUC | PR AUC (AP) | FPR = 1% olduqda TPR |
+|---|---|---|---|
+| SGD | 0.981 | 0.947 | 91.0% |
+| Təsadüfi meşə | **0.995** | **0.988** | **98.6%** |
+
+Fərq “0.981 və 0.995” kimi kiçik görünür, lakin praktiki sual verdikdə böyüyür. **“Hər 100 başqa rəqəmdən yalnız birini səhvən ‘5’ saya bilərik”** şərtində SGD 5-lərin 91%-ni, təsadüfi meşə isə 98.6%-ni tutur. Buraxılan 5-lərin sayı ~6 dəfə azalır.
+
+</Section>
+
+<Section id="pr-vs-roc">
+
+Hansı əyrini seçmək lazımdır? Praktiki qayda belədir:
+
+- **Müsbət sinif nadirdirsə** və ya **yanlış müsbətlər** sizi daha çox narahat edirsə, **PR əyrisi** seçin.
+- Əks halda **ROC əyrisi** seçin.
+
+Səbəb belədir: mənfilər çox olduqda FPR-in məxrəci (FP + TN) böyükdür. Yüzlərlə yanlış həyəcan belə FPR-i az dəyişir və ROC əyrisi optimist görünür. Precision isə yanlış həyəcanları birbaşa müsbət proqnozlarla müqayisə edir. Bizim məlumatda bunu görmək olar: SGD üçün ROC AUC 0.981 olduğu halda PR AUC (average precision) 0.947-dir. PR əyrisi zəiflikləri daha aydın göstərir.
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch03.code.roc" />
+
+</Section>
+
+<Section id="summary">
+
+- **ROC əyrisi:** bütün hədlər üçün TPR (recall) və FPR.
+- **AUC** həddən asılı deyil: müsbətin mənfidən yüksək bal alma ehtimalı. 1 mükəmməl, 0.5 təsadüfi təxmindir.
+- Təsadüfi meşə: AUC 0.995 və FPR = 1% olduqda TPR 98.6%. SGD-də TPR 91%-dir.
+- Nadir müsbət sinif və ya FP-yə həssaslıq varsa, **PR əyrisi** daha informativdir.
+
+</Section>

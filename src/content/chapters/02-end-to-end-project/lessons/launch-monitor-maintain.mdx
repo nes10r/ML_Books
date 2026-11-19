@@ -1,0 +1,84 @@
+<Section id="present">
+
+Sistemi istifadəyə verməzdən əvvəl rəhbərlikdən təsdiq almaq lazımdır. Yaxşı təqdimat bunları əhatə edir:
+
+- **Nəyə nail olduq:** test RMSE ≈ 29 000 AZN (95% interval: 24 800 – 33 200), əl ilə qiymətləndirmə ilə müqayisəli dəqiqlik, lakin saniyələr ərzində.
+- **Nə işlədi, nə işləmədi:** yazı səhvlərinin düzəldilməsi və coğrafi əlamətlər faydalı oldu. Otaq sahəsi və mərtəbə nisbəti xətti korrelyasiya göstərmədi.
+- **Fərziyyələr və məhdudiyyətlər:** model sintetik məlumat üzərində öyrədilib. Kupçasız və çox böyük mənzillərdə xəta daha yüksək ola bilər.
+- **Sadə, yadda qalan nəticələr:** “ən vacib amil sahədir, sonra yer” kimi.
+
+Vizuallar və aydın dil düsturlardan daha təsirlidir. Auditoriya ML mütəxəssisi olmaya bilər.
+
+</Section>
+
+<Section id="save-model">
+
+İstifadəyə vermək üçün əvvəlcə yekun model **bütün məlumatla** (təlim + test) yenidən öyrədilir və fayla saxlanılır. Pipeline sayəsində bütün hazırlıq addımları da modelin içindədir.
+
+<PythonExample id="ch02.code.save-model" />
+
+Bu kod üç vacib məqamı göstərir:
+
+1. `joblib.dump()` bütün pipeline-ı saxlayır: imputer-in medianları, scaler-in ortaları, kodlaşdırıcıların kateqoriyaları və 100 ağac.
+2. Yükləyən proses **eyni xüsusi sinifləri** (`AreaTypoFixer`, `column_ratio`) idxal edə bilməlidir. Ona görə `from pipeline import ...` sətri var.
+3. Yeni mənzil **xam formada** (adi dict/DataFrame) verilir. Bütün çevirmələr avtomatikdir.
+
+<Callout variant="warning" title="Təhlükəsizlik və versiyalar">
+Pickle faylı yüklənərkən **istənilən kodu icra edə bilər**. Etibar etmədiyiniz mənbədən model faylı yükləməyin. Həmçinin modeli saxladığınız və yüklədiyiniz mühitdə **Scikit-Learn versiyası eyni** olmalıdır. Versiyaları `requirements.txt` faylında qeyd edin.
+</Callout>
+
+</Section>
+
+<Section id="deploy">
+
+Modeli istifadəyə vermək üçün bir neçə tipik variant var:
+
+| Variant | Necə işləyir | Nə vaxt uyğundur |
+|---|---|---|
+| **Veb xidmət (REST API)** | Server modeli yükləyir. Tətbiq JSON göndərib proqnoz alır. Məsələn, FastAPI ilə. | Proqnoz real vaxtda lazımdırsa, bir neçə tətbiq istifadə edirsə |
+| **Paket (batch) proqnoz** | Gecə skripti bütün yeni elanlar üçün proqnozları hesablayıb bazaya yazır. | Real vaxt tələb olunmursa. Ən sadə və ucuz variantdır |
+| **Bulud ML platforması** | Model fayl kimi yüklənir, platforma miqyaslamanı və monitorinqi təmin edir. | Böyük yük, komandanın infrastruktur resursu azdırsa |
+| **Cihazda / brauzerdə** | Model mobil tətbiqə və ya veb səhifəyə daxil edilir. | Gecikmə və məxfilik kritikdirsə (Fəsil 10-da) |
+
+Veb xidmət yanaşmasının üstünlüyü belədir: modeli yeniləmək üçün yalnız serveri yeniləmək lazımdır. Tətbiqlər dəyişmir.
+
+</Section>
+
+<Section id="monitoring">
+
+İstifadəyə vermək işin sonu deyil, yeni mərhələnin başlanğıcıdır. Model zamanla köhnəlir: bazar dəyişir, yeni rayonlar tikilir, qiymətlər inflyasiya ilə artır (<Term id="concept-drift" />). <Term id="model-monitoring" full /> planı belə qurulur:
+
+1. **Proqnoz keyfiyyətini izləyin.** Real satış qiymətləri məlum olduqca (həftələr sonra) proqnozlarla müqayisə edin. RMSE-ni həftəlik qrafikdə göstərin.
+2. **Gecikən etiketlər üçün əvəzedici siqnallar qurun.** Real qiymət gec məlum olursa, qiymətləndiricilərin modeli nə qədər tez-tez “düzəltdiyini” izləyin.
+3. **Giriş məlumatını izləyin.** Orta sahə, rayon payları, boşluqların faizi təlim məlumatından kəskin fərqlənirsə, bu, həm keyfiyyət, həm də paylanma problemidir. Məsələn, sayt formasındakı dəyişiklik sahəni sm²-də göndərməyə başlaya bilər.
+4. **Hədlər və xəbərdarlıqlar təyin edin.** Məsələn, “həftəlik RMSE 40 000-i keçərsə” və ya “metro_mesafe boşluqları 15%-i keçərsə”.
+5. **İnfrastrukturu izləyin.** Cavab müddəti, xəta sayı, yaddaş istifadəsi.
+
+</Section>
+
+<Section id="maintenance">
+
+Sistemi uzun müddət sağlam saxlamaq üçün nə qədər mümkündürsə, o qədər **avtomatlaşdırın**. Tipik səhvlər və onların qarşısı:
+
+- **Yenidən təlimi əl ilə etmək.** Prosesi skriptə çevirin: yeni məlumatı topla → yenidən öyrət → test et → köhnə modellə müqayisə et → daha yaxşıdırsa yerləşdir.
+- **Versiyalamamaq.** Hər model versiyasını və onun öyrədildiyi məlumat dəstini saxlayın. Yeni model pis çıxsa, bir əmrlə **geri qaytarın** (rollback).
+- **Yalnız ümumi metrikaya baxmaq.** Model ümumilikdə yaxşı, lakin müəyyən qrupda (məsələn, Xəzər rayonunda) çox pis ola bilər. Seqmentlər üzrə ayrıca test dəstləri saxlayın.
+- **Pozulmuş girişi modelə ötürmək.** Giriş məlumatını **yoxlayın**: sxem, diapazon, boşluqlar. Şübhəli sorğuları rədd edin və ya işarələyin.
+- **Model faylı ilə hazırlıq kodunu ayrı saxlamaq.** Pipeline bunun qarşısını alır: hazırlıq modelin içindədir.
+
+<Callout variant="insight">
+Real layihələrdə vaxtın böyük hissəsi model qurmağa deyil, məlumatın hazırlanmasına, infrastruktura və monitorinqə gedir. Bu iş sahəsi **MLOps** adlanır.
+</Callout>
+
+</Section>
+
+<Section id="summary">
+
+- Nəticələri **aydın, vizual və məhdudiyyətləri ilə** təqdim edin.
+- Yekun modeli **bütün məlumatla** öyrədin, **joblib** ilə saxlayın, versiyaları qeyd edin.
+- İstifadəyə vermə: **veb xidmət**, **paket proqnoz**, bulud və ya cihaz.
+- **Monitorinq:** keyfiyyət, giriş məlumatı, infrastruktur. **Dəstək:** avtomatlaşdırma, versiyalama, rollback.
+
+Təbriklər! Bakı mənzil qiymətləri sistemini başdan sona qurdunuz. Bilikləri yoxlamaq üçün [Fəsil 2-nin yekun testini](/exercises/ch02.quiz.final) həll edin.
+
+</Section>

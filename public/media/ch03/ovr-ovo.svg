@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" font-family="Inter, system-ui, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">OvR və OvO strategiyaları</title>
+  <desc id="d">OvR: hər sinif üçün bir təsnifatçı, ən yüksək bal qalib gəlir. OvO: hər sinif cütü üçün bir təsnifatçı, ən çox səs alan sinif qalib gəlir.</desc>
+  <rect width="960" height="400" rx="20" fill="#ffffff"/>
+  <rect x="24" y="24" width="440" height="352" rx="16" fill="#eef2ff" stroke="#c7d2fe"/>
+  <rect x="496" y="24" width="440" height="352" rx="16" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="244" y="60" text-anchor="middle" font-size="18" font-weight="700" fill="#312e81">Biri hamıya qarşı (OvR)</text>
+  <text x="716" y="60" text-anchor="middle" font-size="18" font-weight="700" fill="#92400e">Biri birə qarşı (OvO)</text>
+  <g font-size="14">
+    <g fill="#ffffff" stroke="#a5b4fc">
+      <rect x="56" y="88" width="170" height="40" rx="8"/><rect x="56" y="138" width="170" height="40" rx="8"/><rect x="56" y="188" width="170" height="40" rx="8"/><rect x="56" y="250" width="170" height="40" rx="8"/>
+    </g>
+    <text x="141" y="113" text-anchor="middle" fill="#3730a3">0 ↔ qalanlar</text>
+    <text x="141" y="163" text-anchor="middle" fill="#3730a3">1 ↔ qalanlar</text>
+    <text x="141" y="213" text-anchor="middle" fill="#3730a3">2 ↔ qalanlar</text>
+    <text x="141" y="242" text-anchor="middle" fill="#6366f1">⋮</text>
+    <text x="141" y="275" text-anchor="middle" fill="#3730a3">9 ↔ qalanlar</text>
+    <g fill="#4f46e5">
+      <rect x="250" y="98" width="40" height="20" rx="4" opacity="0.35"/><rect x="250" y="148" width="70" height="20" rx="4" opacity="0.5"/><rect x="250" y="198" width="160" height="20" rx="4"/><rect x="250" y="260" width="30" height="20" rx="4" opacity="0.3"/>
+    </g>
+    <text x="418" y="213" fill="#312e81" font-weight="700">✓</text>
+    <text x="244" y="322" text-anchor="middle" fill="#312e81">K sinif → K təsnifatçı (10)</text>
+    <text x="244" y="346" text-anchor="middle" fill="#4338ca" font-size="13">ən yüksək bal qalib gəlir</text>
+    <g fill="#ffffff" stroke="#fcd34d">
+      <rect x="528" y="88" width="120" height="36" rx="8"/><rect x="660" y="88" width="120" height="36" rx="8"/><rect x="792" y="88" width="120" height="36" rx="8"/>
+      <rect x="528" y="134" width="120" height="36" rx="8"/><rect x="660" y="134" width="120" height="36" rx="8"/><rect x="792" y="134" width="120" height="36" rx="8"/>
+      <rect x="528" y="214" width="120" height="36" rx="8"/>
+    </g>
+    <text x="588" y="111" text-anchor="middle" fill="#92400e">0 ↔ 1</text><text x="720" y="111" text-anchor="middle" fill="#92400e">0 ↔ 2</text><text x="852" y="111" text-anchor="middle" fill="#92400e">0 ↔ 3</text>
+    <text x="588" y="157" text-anchor="middle" fill="#92400e">1 ↔ 2</text><text x="720" y="157" text-anchor="middle" fill="#92400e">1 ↔ 3</text><text x="852" y="157" text-anchor="middle" fill="#92400e">2 ↔ 3</text>
+    <text x="720" y="198" text-anchor="middle" fill="#b45309">⋯</text>
+    <text x="588" y="237" text-anchor="middle" fill="#92400e">8 ↔ 9</text>
+    <text x="780" y="237" fill="#92400e">hər cüt yalnız öz</text>
+    <text x="780" y="257" fill="#92400e">iki sinfi ilə öyrənir</text>
+    <text x="716" y="322" text-anchor="middle" fill="#92400e">K sinif → K·(K−1)/2 təsnifatçı (45)</text>
+    <text x="716" y="346" text-anchor="middle" fill="#b45309" font-size="13">ən çox səs alan sinif qalib gəlir</text>
+  </g>
+</svg>

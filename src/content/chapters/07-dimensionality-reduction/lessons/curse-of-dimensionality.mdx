@@ -1,0 +1,56 @@
+<Section id="curse">
+
+Bir çox ML problemində hər nümunənin minlərlə, hətta milyonlarla əlaməti olur. Rəqəm şəklində 64 piksel, mətnin söz tezliklərində on minlərlə söz, gen ifadəsi məlumatında isə 20 000-dən çox gen. Çoxlu əlamət təlimi yavaşladır. Ondan da pisi, yaxşı həll tapmağı çətinləşdirir. Bu problem <Term id="curse-of-dimensionality" full /> adlanır.
+
+Biz üçölçülü dünyada yaşayırıq və yüksək ölçülü fəza haqqında intuisiyamız tez-tez yanılır. Vahid hiperkubda (hər koordinat 0–1) təsadüfi nöqtələr götürək:
+
+- **Hər şey “kənardadır”.** 2D kvadratda nöqtənin hər hansı sərhədə 0.01-dən yaxın olma ehtimalı ~4%-dir. 10 000 ölçüdə bu ehtimal 99.999…%-ə çatır.
+- **Nöqtələr bir-birindən uzaqlaşır.** İki təsadüfi nöqtə arasındakı orta məsafə 2D-də ~0.52, 1 000 ölçüdə ~12.9, 10 000 ölçüdə isə ~40.8-dir. Halbuki onların hamısı eyni vahid hiperkubun içindədir.
+- **Məsafələr bir-birinə bənzəyir.** Ən yaxın qonşunun məsafəsi ən uzaq qonşunun məsafəsinə yaxınlaşır.
+
+Nəticə ML üçün ağırdır. Yüksək ölçülü məlumat çox **seyrəkdir**: yeni nümunə təlim nümunələrindən uzaqda olur və proqnoz kiçik ölçüdəkindən daha az etibarlı olur. Sıxlığı saxlamaq üçün lazım olan nümunə sayı ölçü ilə **eksponensial** artır. Məsələn, 100 əlamətdə hər iki nümunə arasında orta məsafəni 0.1 saxlamaq üçün kainatdakı atomlardan çox nümunə lazım olardı.
+
+</Section>
+
+<Section id="simulation">
+
+Ölçünü artırın və iki göstəricini izləyin: kənara yaxın nöqtələrin payı və ən yaxın/ən uzaq məsafə nisbəti. Aşağıdakı histoqram bir sorğu nöqtəsindən 400 təsadüfi nöqtəyə qədər olan məsafələrin paylanmasını göstərir.
+
+<Demo id="curse-dimensionality" />
+
+Kiçik ölçüdə məsafələr geniş yayılıb: bəzi nöqtələr çox yaxın, bəziləri çox uzaqdır. Yüksək ölçüdə histoqram **dar zirvəyə** çevrilir, yəni bütün nöqtələr təxminən eyni məsafədədir. k-NN kimi “oxşarlığa” əsaslanan alqoritmlər belə mühitdə öz əsasını itirir.
+
+</Section>
+
+<Section id="approaches">
+
+Xoşbəxtlikdən, real məlumat təsadüfi nöqtələr deyil. Onun əlamətləri arasında güclü əlaqələr var. Bu, <Term id="dimensionality-reduction" full /> üçün imkan yaradır. İki əsas yanaşma var:
+
+<Media id="ch07.media.projection-manifold" />
+
+**1. Proyeksiya.** Çox vaxt nümunələr bütün fəzaya bərabər səpələnmir. Onlar daha aşağı ölçülü **alt fəzanın** (müstəvi, hipermüstəvi) yaxınlığında yerləşir. Məsələn, rəqəm şəkillərində bəzi piksellər demək olar ki, həmişə ağdır, digərləri isə bir-biri ilə güclü korrelyasiyalıdır. Belə halda məlumatı həmin alt fəzaya **proyeksiya** etmək az informasiya itirir. Bunun əsas aləti PCA-dır (növbəti dərs).
+
+**2. Manifold öyrənmə.** Bəzən alt fəza **əyilmiş** olur, məsələn rulon şəklində (*İsveçrə rulonu*). Onu müstəviyə proyeksiya etsək, rulonun qatları üst-üstə düşür. Halbuki rulon əslində lokal olaraq düz bir **lentdir**, yəni 2D manifolddur. <Term id="manifold-learning" full /> bu lenti “açmağa” çalışır.
+
+Bu yanaşmanın arxasında <Term id="manifold-hypothesis" full /> dayanır: real yüksək ölçülü məlumatın çoxu daha aşağı ölçülü manifold üzərində və ya ona yaxın yerləşir. Məsələn, 28×28 pikselli bütün mümkün şəkillərin içində “rəqəmə bənzəyən” şəkillər kiçik, lakin hamar bir səth təşkil edir.
+
+<Callout variant="warning">
+Ölçünü azaltmaq həmişə daha sadə həll vermir. Bəzən manifold üzərində sərhəd fəzanın özündəkindən daha mürəkkəb olur. Ölçü azaltma adətən təlimi sürətləndirir, lakin dəqiqliyə təsiri məlumatdan asılıdır. Həmişə yoxlayın.
+</Callout>
+
+</Section>
+
+<Section id="python">
+
+<PythonExample id="ch07.code.curse" />
+
+</Section>
+
+<Section id="summary">
+
+- **Ölçü lənəti:** yüksək ölçüdə məlumat seyrəkdir, nöqtələr “kənardadır” və məsafələr bir-birinə bənzəyir.
+- Sıxlığı saxlamaq üçün lazım olan nümunə sayı ölçü ilə **eksponensial** artır.
+- **Proyeksiya:** məlumat alt fəzaya yaxındırsa, ona proyeksiya etmək kifayətdir.
+- **Manifold öyrənmə:** məlumat əyilmiş səth üzərindədirsə, onu “açmaq” lazımdır. **Manifold fərziyyəsi** bunu əsaslandırır.
+
+</Section>
